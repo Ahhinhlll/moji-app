@@ -1,0 +1,123 @@
+.top-bar {
+  background-color: #f8a7b4;
+  color: white;
+  font-size: 14px;
+  a {
+    color: white;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.right-section {
+  display: flex;
+  gap: 15px;
+}
+
+.navbar-custom {
+  background-color: #fff;
+  padding: 15px 0;
+}
+
+.logo-img {
+  max-width: 100px;
+  height: auto;
+}
+
+.search-bar {
+  width: 40%;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  a {
+    color: black;
+    font-weight: 500;
+    text-decoration: none;
+    &:hover {
+      color: #f8a7b4;
+    }
+  }
+}
+
+.cart-icon {
+  position: relative;
+  font-size: 25px;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -12px;
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+.border-pink {
+  border: 2px solid #f8a7b4 !important;
+  border-radius: 10px;
+}
+
+.btn-pink {
+  background-color: #f8a7b4 !important;
+  color: white !important;
+  border-radius: 0 10px 10px 0;
+}
+.hoverDanhMuc a:hover {
+  color: #f8a7b4 !important;
+}
+.menu-bar {
+  background-color: #f8a7b4 !important;
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+
+  .navbar-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .nav-link {
+    color: white !important;
+    font-weight: bold;
+    padding: 10px 15px;
+    white-space: nowrap;
+    &:hover {
+      color: rgb(238, 82, 126) !important;
+    }
+  }
+
+  .dropdown-menu {
+    background-color: #f8a7b4 !important;
+    border: none;
+    .dropdown-item {
+      color: white !important;
+      &:hover {
+        background-color: #ff85a2 !important;
+      }
+    }
+  }
+
+  .dropdown-item.active {
+    background-color: #ff66b2 !important;
+    color: white !important;
+    font-weight: bold;
+  }
+}
+.btn-link {
+  text-decoration: none !important;
+  transition: all 0.3s ease;
+  width: 60px;
+}
+button.btn-link:hover {
+  color: #f8a7b4 !important;
+  font-size: 18px !important;
+}

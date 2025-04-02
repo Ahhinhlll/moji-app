@@ -1,0 +1,52 @@
+.nav-pills {
+  .nav-item {
+    button {
+      background-color: #f8f8f8;
+      color: #f8a7b4;
+      margin-right: 25px;
+      padding: 10px 20px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+
+      &.active {
+        background-color: #f8a7b4;
+        color: white;
+        font-weight: 600;
+      }
+    }
+
+    &:last-child button {
+      margin-right: 0;
+    }
+  }
+}
+
+.chuc-nang {
+  .item-link {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    &:hover {
+      color: #f8a7b4;
+      font-weight: 500;
+    }
+  }
+}
+
+.btn-dangNhap {
+  background-color: #f8a7b4;
+  color: white;
+  border: none;
+  padding: 7px 10px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+
+  &:hover {
+    background-color: darken(#f8a7b4, 10%);
+  }
+
+  &:active {
+    background-color: darken(#f8a7b4, 15%);
+  }
+}

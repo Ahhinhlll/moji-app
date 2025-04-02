@@ -1,0 +1,353 @@
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "./SanPhamAdmin.scss";
+import { useEffect, useState } from "react";
+import {
+  createProduct,
+  deleteProduct,
+  getAllProducts,
+  updateProduct,
+} from "../../../services/sanPhamService";
+import {
+  getAllCtCategory,
+  getCtCategoryById,
+} from "../../../services/danhMucService";
+
+function SanPhamAdmin() {
+  if (!localStorage.getItem("token")) {
+    window.location.replace("/dang-nhap");
+  }
+  const [modalOpen, setModalOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(5);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [formData, setFormData] = useState({
+    tenSP: "",
+    code: "",
+    mauSP: "",
+    moTa: "",
+    soLuong: 0,
+    giaTien: "",
+    ma_CTDM: "",
+    anhSP: [],
+  });
+
+  // mở modal update
+  const handleEditClick = (product) => {
+    setSelectedProduct(product);
+    setFormData({
+      tenSP: product.tenSP,
+      code: product.code,
+      mauSP: product.mauSP,
+      moTa: product.moTa,
+      soLuong: product.soLuong,
+      giaTien: product.giaTien,
+      ma_CTDM: product.ma_CTDM,
+      anhSP: product.anhSP,
+    });
+    setModalOpen(true);
+  };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getAllProducts();
+        const updatedProducts = await Promise.all(
+          data.map(async (product) => {
+            const category = await getCtCategoryById(product.ma_CTDM);
+            return { ...product, tenCTDM: category.tenCTDM };
+          })
+        );
+        setProducts(updatedProducts);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách sản phẩm:", error);
+      }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllCtCategory();
+        setCategories(data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh mục:", error);
+      }
+    };
+
+    fetchProducts();
+    fetchCategories();
+  }, []);
+  const getCategoryName = (ma_CTDM) => {
+    const category = categories.find((cat) => cat.ma_CTDM === ma_CTDM);
+    return category ? category.tenCTDM : "Không xác định";
+  };
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [id]: value }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const data = await createProduct(formData);
+      setProducts((prevProducts) => [...prevProducts, data]);
+      setModalOpen(false);
+    } catch (error) {
+      console.error("Lỗi khi thêm sản phẩm:", error);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedProduct) return;
+    try {
+      const updatedData = { ...formData, maSP: selectedProduct.maSP };
+
+      await updateProduct(updatedData);
+
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.maSP === selectedProduct.maSP
+            ? { ...product, ...formData }
+            : product
+        )
+      );
+
+      setModalOpen(false);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật sản phẩm:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteProduct(id);
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.maSP !== id)
+      );
+    } catch (error) {
+      console.error("Lỗi khi xóa sản phẩm:", error);
+    }
+  };
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = products.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(products.length / recordsPerPage);
+
+  const getProductImage = (imageArray) => {
+    if (Array.isArray(imageArray) && imageArray.length > 0) {
+      return `http://localhost:3001${imageArray[0]}`;
+    }
+    return "/image/default.jpg";
+  };
+
+  return (
+    <div className="container-fluid mt-1">
+      <h3 className="mb-3 mt-2 text-center">Danh sách sản phẩm</h3>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <select
+            className="form-select w-auto"
+            value={recordsPerPage}
+            onChange={(e) => setRecordsPerPage(Number(e.target.value))}
+          >
+            <option value={5}>5 bản ghi/trang</option>
+            <option value={10}>10 bản ghi/trang</option>
+            <option value={15}>15 bản ghi/trang</option>
+          </select>
+        </div>
+
+        <button
+          className="btn-add"
+          onClick={() => {
+            setSelectedProduct(null);
+            setModalOpen(true);
+          }}
+        >
+          <i className="bi bi-file-earmark-plus"></i> Thêm sản phẩm
+        </button>
+      </div>
+
+      <table className="table tb-sanPham table-bordered text-center align-middle">
+        <thead>
+          <tr>
+            <th>Mã hàng</th>
+            <th>Loại hàng</th>
+            <th>Tên hàng</th>
+            <th>Màu</th>
+            <th>Ảnh</th>
+            <th>Mô tả</th>
+            <th>Số lượng</th>
+            <th>Đơn giá</th>
+            <th colSpan={2}>Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentRecords.map((product) => (
+            <tr key={product.maSP}>
+              <td>{product.code}</td>
+              <td>{getCategoryName(product.ma_CTDM)}</td>
+              <td>{product.tenSP}</td>
+              <td>{product.mauSP}</td>
+              <td>
+                <img
+                  src={getProductImage(product.anhSP)}
+                  alt={product.tenSP}
+                  className="product-img"
+                />
+              </td>
+              <td>{product.moTa}</td>
+              <td>{product.soLuong}</td>
+              <td>{product.giaTien?.toLocaleString()}đ</td>
+              <td className="text-center">
+                <button
+                  className="btn btn-warning me-2"
+                  onClick={() => handleEditClick(product)}
+                >
+                  <i className="bi bi-pencil-square"></i>
+                </button>
+              </td>
+              <td className="text-center">
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleDelete(product.maSP)}
+                >
+                  <i className="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Pagination */}
+      <div className="pagination-container">
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            className={`pagination-btn ${
+              currentPage === i + 1 ? "active" : ""
+            }`}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
+
+      {/* Modal */}
+      {modalOpen && (
+        <div className="sanpham-admin-modal">
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <span className="close-btn" onClick={() => setModalOpen(false)}>
+                <i className="bi bi-x-circle"></i>
+              </span>
+              <h3 className="mt-5 mb-4">
+                {selectedProduct ? "Cập nhật thông tin" : "Thêm mới thông tin"}
+                {/* Thêm mới thông tin */}
+              </h3>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  id="tenSP"
+                  className="form-control"
+                  placeholder="Tên sản phẩm"
+                  onChange={handleInputChange}
+                  value={formData.tenSP}
+                />
+              </div>
+
+              <div className="form-group">
+                <select
+                  id="ma_CTDM"
+                  className="form-control"
+                  onChange={handleInputChange}
+                >
+                  <option value={0}>Chọn danh mục</option>
+                  {categories.map((cat) => (
+                    <option key={cat.ma_CTDM} value={cat.ma_CTDM}>
+                      {cat.tenCTDM}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <input
+                  type="text"
+                  id="code"
+                  className="form-control"
+                  placeholder="Code sản phẩm"
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="text"
+                  id="mauSP"
+                  className="form-control"
+                  placeholder="Màu sắc"
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  id="anhSP"
+                  className="form-control"
+                  placeholder="Ảnh sản phẩm"
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  id="moTa"
+                  className="form-control"
+                  placeholder="Mô tả"
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="number"
+                  id="soLuong"
+                  className="form-control"
+                  placeholder="Số lượng"
+                  readOnly
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="number"
+                  id="giaTien"
+                  className="form-control"
+                  placeholder="Giá thành"
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <button
+                className="btn-save"
+                onClick={selectedProduct ? handleUpdate : handleSubmit}
+                //onClick={handleSubmit}
+              >
+                <i className="bi bi-save"></i> Lưu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default SanPhamAdmin;

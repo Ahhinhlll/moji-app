@@ -1,0 +1,78 @@
+.cart-container {
+  font-family: Arial, sans-serif;
+
+  .table th,
+  .table td {
+    vertical-align: middle;
+    text-align: center;
+  }
+  .table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  .note {
+    margin-top: 20px;
+  }
+  .check-cart {
+    transform: scale(1.5);
+    accent-color: #ff69b4;
+  }
+  .hover-name:hover {
+    color: #ff69b4;
+  }
+
+  .img-cart {
+    max-width: 100px;
+    max-height: 100px;
+    width: 100%;
+    padding: 5px;
+  }
+  .total {
+    font-weight: bold;
+    color: #ff69b4;
+    font-size: 1.5rem;
+  }
+  .btn-xoa {
+    border: none;
+    background-color: white;
+    &:hover {
+      color: #ff69b4;
+    }
+  }
+
+  .btn-custom {
+    background-color: #ff85c2eb;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    margin-right: 10px;
+    &:hover {
+      background-color: #ff69b4;
+    }
+  }
+  .btn-thanhToan {
+    background-color: white;
+    color: #ff69b4;
+    border: 1px solid #ff69b4;
+    padding: 10px 20px;
+    border-radius: 20px;
+    margin-right: 10px;
+    &:hover {
+      background-color: #ff85c1;
+      color: white;
+    }
+  }
+
+  .quantity-input {
+    width: 45px;
+    padding-left: 10px;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    &:focus {
+      outline: none;
+    }
+  }
+}

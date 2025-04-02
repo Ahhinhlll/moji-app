@@ -1,0 +1,17 @@
+.btn-dangKy {
+  background-color: #f8a7b4;
+  color: white;
+  border: none;
+  padding: 7px 10px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+
+  &:hover {
+    background-color: darken(#f8a7b4, 10%);
+  }
+
+  &:active {
+    background-color: darken(#f8a7b4, 15%);
+  }
+}
