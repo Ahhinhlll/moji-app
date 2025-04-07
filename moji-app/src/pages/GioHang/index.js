@@ -40,6 +40,7 @@ function GioHang() {
     console.log("xóa", updatedCart);
     localStorage.setItem("gioHang", JSON.stringify(updatedCart));
   };
+
   const handleCheckout = () => {
     Navigate("/thanh-toan", { state: { cartItems } });
   };

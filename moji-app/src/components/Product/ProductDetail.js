@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getProductById } from "../../services/sanPhamService";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../../pages/SanPham/sanPham.scss";
@@ -7,6 +7,7 @@ import ProductList from "../Product/ProductList";
 
 function ProductDetail() {
   const { id } = useParams();
+  const Navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -30,9 +31,9 @@ function ProductDetail() {
           maSP: data.maSP,
           tenSP: data.tenSP,
           giaTien: data.giaTien,
-          anhSP: data.anhSP?.[0] || "/image/default.jpg",
+          anhSP: data.anhSP || "/image/default.jpg",
           quantity: 1,
-          color: data.mauSP, // Giả sử sản phẩm có màu sắc
+          mauSP: data.mauSP,
         });
       } catch (error) {
         console.log("Lỗi lấy data chi tiết sản phẩm: ", error);
@@ -68,6 +69,15 @@ function ProductDetail() {
     setAddedProduct(cartItem);
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 3000);
+  };
+  const handleBuyNow = () => {
+    if (!selectedProduct) return;
+    console.log("Sản phẩm đã chọn thanh toán :", selectedProduct);
+    console.log("Số lượng thanh toán :", quantity);
+
+    Navigate("/thanh-toan", {
+      state: { cartItems: [{ ...selectedProduct, quantity }] },
+    });
   };
 
   if (!product) return <p className="text-center">Đang tải...</p>;
@@ -168,7 +178,10 @@ function ProductDetail() {
                 >
                   <i className="bi bi-cart-plus"></i> Thêm vào giỏ hàng
                 </button>
-                <button className="btn-sanPham btn-buy-now">
+                <button
+                  className="btn-sanPham btn-buy-now"
+                  onClick={handleBuyNow}
+                >
                   <i className="bi bi-bag-check"></i> Mua ngay
                 </button>
               </div>
@@ -228,7 +241,7 @@ function ProductDetail() {
         {showNotification && addedProduct && (
           <div className="cart-notification">
             <img
-              src={`http://localhost:3001${addedProduct.anhSP}`}
+              src={`http://localhost:3001${addedProduct.anhSP[0]}`}
               alt={addedProduct.tenSP}
               className="cart-notification-img"
             />

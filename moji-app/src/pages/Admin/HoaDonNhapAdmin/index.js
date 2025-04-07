@@ -2,37 +2,33 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useEffect, useState } from "react";
-import {
-  deleteBill,
-  getAllBill,
-  getBillById,
-  updateBill,
-} from "../../../services/hoaDonBanService";
 import { getUserById } from "../../../services/nguoiDungService";
 import { getProductById } from "../../../services/sanPhamService";
+import {
+  deleteImprot,
+  getAllImport,
+  getImportById,
+} from "../../../services/hoaDonNhapService";
 
 function HoaDonNhapAdmin() {
   if (!localStorage.getItem("token")) {
     window.location.replace("/dang-nhap");
   }
 
-  const [bills, setBills] = useState([]);
+  const [imports, setImports] = useState([]);
   const [users, setUsers] = useState({});
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedBill, setSelectedBill] = useState(null);
+  const [selectedImport, setSelectedImport] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchBills = async () => {
       try {
-        const data = await getAllBill();
-        setBills(data);
-        setLoading(false);
+        const data = await getAllImport();
+        setImports(data);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách hóa đơn:", error);
-        setLoading(false);
       }
     };
     fetchBills();
@@ -52,12 +48,12 @@ function HoaDonNhapAdmin() {
     };
 
     //
-    bills.forEach((bill) => {
-      if (bill.maND) {
-        fetchUserDetails(bill.maND);
+    imports.forEach((imp) => {
+      if (imp.maND) {
+        fetchUserDetails(imp.maND);
       }
     });
-  }, [bills]);
+  }, [imports]);
 
   // Lấy thông tin sản phẩm theo maSP
   useEffect(() => {
@@ -74,65 +70,51 @@ function HoaDonNhapAdmin() {
     };
 
     //
-    bills.forEach((bill) => {
-      bill.CTHoaDonBans.forEach((item) => {
+    imports.forEach((imp) => {
+      imp.CTHoaDonNhaps.forEach((item) => {
         if (item.maSP) {
           fetchProductDetails(item.maSP);
         }
       });
     });
-  }, [bills]);
+  }, [imports]);
 
   const handleViewDetails = async (maHDB) => {
     try {
-      const billDetail = await getBillById(maHDB);
-      setSelectedBill(billDetail);
+      const billDetail = await getImportById(maHDB);
+      setSelectedImport(billDetail);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách chi tiết hóa đơn:", error);
     }
   };
   const handleDeleteBill = async (id) => {
     try {
-      const data = await deleteBill(id);
+      const data = await deleteImprot(id);
 
-      if (data.CTHoaDonBans) {
+      if (data.CTHoaDonNhaps) {
         // xóa hóa đơn
-        setBills((prev) => prev.filter((bill) => bill.maHDB !== id));
-        setSelectedBill(null);
+        setImports((prev) => prev.filter((imp) => imp.maHDN !== id));
+        setSelectedImport(null);
       } else {
         //  xóa chi tiết hóa đơn
-        const updated = await getBillById(selectedBill.maHDB);
+        const updated = await getImportById(selectedImport.maHDN);
 
-        setBills((prev) =>
-          prev.map((bill) => (bill.maHDB === updated.maHDB ? updated : bill))
+        setImports((prev) =>
+          prev.map((imp) => (imp.maHDN === updated.maHDN ? updated : imp))
         );
 
-        setSelectedBill(updated);
+        setSelectedImport(updated);
       }
     } catch (error) {
       console.error("Lỗi khi xóa hóa đơn:", error);
     }
   };
 
-  const handleTrangThai = async (maHDB, newTrangThai) => {
-    try {
-      const updatedBill = await updateBill({ maHDB, trangThai: newTrangThai });
-      setBills((prev) =>
-        prev.map((bill) => (bill.maHDB === maHDB ? updatedBill : bill))
-      );
-    } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái hóa đơn:", error);
-    }
-  };
-
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = bills.slice(indexOfFirstRecord, indexOfLastRecord);
-  const totalPages = Math.ceil(bills.length / recordsPerPage);
+  const currentRecords = imports.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(imports.length / recordsPerPage);
 
-  if (loading) {
-    return <div>Đang tải dữ liệu...</div>;
-  }
   return (
     <div className="container-fluid mt-1">
       <h3 className="mb-3 mt-2 text-center">Danh sách đơn hàng xuất</h3>
@@ -162,20 +144,16 @@ function HoaDonNhapAdmin() {
           </tr>
         </thead>
         <tbody>
-          {currentRecords.map((bill) => (
-            <tr key={bill.maHDB}>
-              <td>{bill.ngayBan}</td>
-              <td>{users[bill.maND]?.tenND}</td>
-              <td>{users[bill.maND]?.sdt}</td>
-              <td>{users[bill.maND]?.diaChi}</td>
-              <td>{users[bill.maND]?.email}</td>
-              <td>{bill.tongTien}</td>
+          {currentRecords.map((imp) => (
+            <tr key={imp.maHDN}>
+              <td>{imp.ngayNhap}</td>
+              <td>{users[imp.maND]?.tenND}</td>
+              <td>{users[imp.maND]?.sdt}</td>
+              <td>{users[imp.maND]?.diaChi}</td>
+              <td>{users[imp.maND]?.email}</td>
+              <td>{imp.tongTien}</td>
               <td>
-                <select
-                  className="form-select"
-                  value={bill.trangThai}
-                  onChange={(e) => handleTrangThai(bill.maHDB, e.target.value)}
-                >
+                <select className="form-select">
                   <option value="Chờ duyệt">Chờ duyệt</option>
                   <option value="Đã duyệt">Đã duyệt</option>
                 </select>
@@ -183,7 +161,7 @@ function HoaDonNhapAdmin() {
               <td>
                 <button
                   className="btn btn-danger me-2"
-                  onClick={() => handleDeleteBill(bill.maHDB)}
+                  onClick={() => handleDeleteBill(imp.maHDN)}
                 >
                   <i className="bi bi-trash"></i>
                 </button>
@@ -193,7 +171,7 @@ function HoaDonNhapAdmin() {
                   className="btn btn-info"
                   data-bs-toggle="modal"
                   data-bs-target="#billDetailModal"
-                  onClick={() => handleViewDetails(bill.maHDB)}
+                  onClick={() => handleViewDetails(imp.maHDN)}
                 >
                   <i className="bi bi-file-earmark-text"></i>
                 </button>
@@ -243,8 +221,8 @@ function HoaDonNhapAdmin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedBill &&
-                    selectedBill.CTHoaDonBans.map((detail, index) => (
+                  {selectedImport &&
+                    selectedImport.CTHoaDonBans.map((detail, index) => (
                       <tr key={index}>
                         <td>{products[detail.maSP]?.code}</td>
                         <td>{products[detail.maSP]?.tenSP}</td>
@@ -262,7 +240,7 @@ function HoaDonNhapAdmin() {
                         <td>
                           <button
                             className="btn btn-danger"
-                            onClick={() => handleDeleteBill(detail.ma_CTHDB)}
+                            onClick={() => handleDeleteBill(detail.ma_CTHDN)}
                           >
                             <i className="bi bi-trash"></i>
                           </button>

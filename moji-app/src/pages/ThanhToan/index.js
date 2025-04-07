@@ -48,6 +48,8 @@ function ThanhToan() {
     }
   };
 
+  const detailProduct = cartItems.length === 1;
+
   const handlePayment = async () => {
     if (!dieuKhoan) {
       alert("Vui lòng đồng ý với các điều khoản trước khi thanh toán.");
@@ -58,10 +60,12 @@ function ThanhToan() {
         giamGia: giamTien,
         phuongThuc: phuongThuc,
         maND: nguoiDung.maND,
-        CTHoaDonBans: cartItems.map((item) => ({
-          maSP: item.maSP,
-          soLuong: item.quantity,
-        })),
+        CTHoaDonBans: detailProduct
+          ? [{ maSP: cartItems[0].maSP, soLuong: cartItems[0].quantity }]
+          : cartItems.map((item) => ({
+              maSP: item.maSP,
+              soLuong: item.quantity,
+            })),
       });
       if (data) {
         alert("Đặt hàng thành công");
@@ -113,7 +117,7 @@ function ThanhToan() {
               disabled
             />
 
-            <input
+            {/* <input
               type="text"
               className="form-control"
               placeholder="Tỉnh/Thành phố *"
@@ -122,7 +126,7 @@ function ThanhToan() {
               type="text"
               className="form-control"
               placeholder="Quận/ Huyện *"
-            />
+            /> */}
             <textarea
               className="form-control"
               rows={3}

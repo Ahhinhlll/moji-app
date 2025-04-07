@@ -38,6 +38,9 @@ const CartDropdown = () => {
     if (Array.isArray(imageArray) && imageArray.length > 0) {
       return `http://localhost:3001${imageArray[0]}`;
     }
+    if (typeof imageArray === "string" && imageArray.trim() !== "") {
+      return `http://localhost:3001${imageArray}`;
+    }
     return "/image/default.jpg";
   };
 
@@ -47,9 +50,9 @@ const CartDropdown = () => {
         {cartItems.length > 0 ? (
           <>
             <div className="cart-items">
-              {cartItems.map((item, index) => (
+              {cartItems.map((item) => (
                 <div
-                  key={`${item.maSP}-${index}`}
+                  key={`${item.maSP}`}
                   className="cart-item d-flex align-items-center mb-3"
                 >
                   <img
@@ -58,7 +61,9 @@ const CartDropdown = () => {
                     className="cart-item-image me-3"
                   />
                   <div className="cart-item-details flex-grow-1">
-                    <p className="cart-item-name mb-1">{item.tenSP}</p>
+                    <p className="cart-item-name mb-1">
+                      {item.tenSP}-{item.mauSP}
+                    </p>
                     <p className="cart-item-price text-danger mb-1">
                       <strong>Đơn giá: </strong> {item.giaTien.toLocaleString()}
                       đ
