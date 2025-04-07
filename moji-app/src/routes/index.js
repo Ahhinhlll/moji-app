@@ -11,10 +11,11 @@ import TongQuanAdmin from "../pages/Admin/TongQuanAdmin";
 import DanhMucAdmin from "../pages/Admin/DanhMucAdmin";
 import SanPhamAdmin from "../pages/Admin/SanPhamAdmin";
 import { Navigate } from "react-router-dom";
-import HoSoAdmin from "../pages/Admin/HoSoAdmin";
 import ThanhToan from "../pages/ThanhToan";
 import NhaCungCapAdmin from "./../pages/Admin/NhaCungCapAdmin/index";
 import HoaDonBanAdmin from "../pages/Admin/HoaDonBanAdmin";
+import HoSoAdmin from "./../pages/Admin/HoSoAdmin/index";
+import HoaDonNhapAdmin from "../pages/Admin/HoaDonNhapAdmin";
 
 export const routes = [
   // user
@@ -59,7 +60,7 @@ export const routes = [
     path: "/admin",
     element: <LayoutAdmin />,
     children: [
-      { path: "", element: <Navigate to="tong-quan" replace /> },
+      { path: "", element: <Navigate to="ho-so-admin" replace /> },
       {
         path: "tong-quan",
         element: <TongQuanAdmin />,
@@ -83,6 +84,10 @@ export const routes = [
       {
         path: "don-xuat-admin",
         element: <HoaDonBanAdmin />,
+      },
+      {
+        path: "don-nhap-admin",
+        element: <HoaDonNhapAdmin />,
       },
     ],
   },

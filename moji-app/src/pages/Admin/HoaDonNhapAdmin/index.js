@@ -11,7 +11,7 @@ import {
 import { getUserById } from "../../../services/nguoiDungService";
 import { getProductById } from "../../../services/sanPhamService";
 
-function HoaDonBanAdmin() {
+function HoaDonNhapAdmin() {
   if (!localStorage.getItem("token")) {
     window.location.replace("/dang-nhap");
   }
@@ -279,4 +279,4 @@ function HoaDonBanAdmin() {
   );
 }
 
-export default HoaDonBanAdmin;
+export default HoaDonNhapAdmin;

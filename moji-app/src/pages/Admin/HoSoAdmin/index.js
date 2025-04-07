@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getRolegetById,
   getUserById,
 } from "../../../services/nguoiDungService";
 import { jwtDecode } from "jwt-decode";
-import { Button } from "react-bootstrap";
+import { updatePassword } from "./../../../services/nguoiDungService";
 function HoSoAdmin() {
   if (!localStorage.getItem("token")) {
     window.location.replace("/dang-nhap");
@@ -67,6 +67,50 @@ function HoSoAdmin() {
       return `http://localhost:3001${imageArray[0]}`;
     }
     return "/image/default.jpg";
+  };
+
+  // đổi pass
+  const [currentPass, setCurrentPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const Navigate = useNavigate();
+
+  const handleUpdatePassword = async () => {
+    if (newPass !== confirmPass) {
+      alert("Mật khẩu mới và xác nhận không khớp!");
+      return;
+    }
+    if (!currentPass || !newPass || !confirmPass) {
+      alert("Vui lòng điền đầy đủ thông tin.");
+      return;
+    }
+    const taiKhoan = localStorage.getItem("taiKhoan");
+    if (!taiKhoan) {
+      alert("Không tìm thấy tài khoản trong localStorage!");
+      return;
+    }
+
+    const data = {
+      taiKhoan: taiKhoan,
+      matKhauCu: currentPass,
+      matKhauMoi: newPass,
+    };
+
+    try {
+      await updatePassword(data);
+      alert("Đổi mật khẩu thành công!");
+      localStorage.removeItem("taiKhoan");
+      localStorage.removeItem("token");
+      Navigate("/dang-nhap");
+
+      // Reset
+      setCurrentPass("");
+      setNewPass("");
+      setConfirmPass("");
+    } catch (error) {
+      console.error("Lỗi đổi mật khẩu:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Đổi mật khẩu thất bại!");
+    }
   };
 
   if (!userData) {
@@ -319,14 +363,11 @@ function HoSoAdmin() {
                         <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
                           <div className="p-2">Password</div>
                         </div>
-                        <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3 d-flex justify-content-between">
+                        <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
                           <div className="p-2">
-                            {"*".repeat(userData.matKhau.length)}
+                            {/* {"*".repeat(userData.matKhau.length)} */}
+                            {userData.matKhau}
                           </div>
-                          <Button>
-                            {" "}
-                            <i className="bi bi-eye-slash"></i>{" "}
-                          </Button>
                         </div>
                         <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
                           <div className="p-2">Role</div>
@@ -614,9 +655,11 @@ function HoSoAdmin() {
                               Current Password
                             </label>
                             <input
-                              type="password"
+                              //type="password"
                               className="form-control"
                               id="currentPassword"
+                              value={currentPass}
+                              onChange={(e) => setCurrentPass(e.target.value)}
                             />
                           </div>
                           <div className="col-12">
@@ -624,9 +667,11 @@ function HoSoAdmin() {
                               New Password
                             </label>
                             <input
-                              type="password"
+                              //type="password"
                               className="form-control"
                               id="newPassword"
+                              value={newPass}
+                              onChange={(e) => setNewPass(e.target.value)}
                             />
                           </div>
                           <div className="col-12">
@@ -637,13 +682,19 @@ function HoSoAdmin() {
                               Confirm Password
                             </label>
                             <input
-                              type="password"
+                              //type="password"
                               className="form-control"
                               id="confirmPassword"
+                              value={confirmPass}
+                              onChange={(e) => setConfirmPass(e.target.value)}
                             />
                           </div>
                           <div className="col-12">
-                            <button type="submit" className="btn btn-primary">
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={handleUpdatePassword}
+                            >
                               Change Password
                             </button>
                           </div>

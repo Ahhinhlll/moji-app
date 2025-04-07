@@ -40,13 +40,15 @@ function GioHang() {
     console.log("xóa", updatedCart);
     localStorage.setItem("gioHang", JSON.stringify(updatedCart));
   };
-
+  const handleCheckout = () => {
+    Navigate("/thanh-toan", { state: { cartItems } });
+  };
+  // table-bordered table-striped table-bordered table-hover
   return (
     <div className="container mt-5 cart-container">
       <table className="table">
         <thead className="table-bordered">
           <tr>
-            <th>Chọn</th>
             <th>Sản phẩm</th>
             <th>Mô tả</th>
             <th>Đơn giá</th>
@@ -58,9 +60,6 @@ function GioHang() {
         <tbody>
           {cartItems.map((item) => (
             <tr key={item.maSP}>
-              <td>
-                <input type="checkbox" className="check-cart" />
-              </td>
               <td>
                 <img
                   src={getProductImage(item.anhSP)}
@@ -128,7 +127,12 @@ function GioHang() {
           >
             Tiếp tục mua sắm
           </button>
-          <button className="btn btn-custom btn-thanhToan">Thanh toán</button>
+          <button
+            className="btn btn-custom btn-thanhToan"
+            onClick={handleCheckout}
+          >
+            Thanh toán
+          </button>
         </div>
       </div>
     </div>

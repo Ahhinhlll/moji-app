@@ -18,3 +18,8 @@ export const getCategoryById = async (id) => {
   const response = await request.get(`/danhmuc/getbyid/${id}`);
   return response.data;
 };
+
+export const deleteCategory = async (id) => {
+  const response = await request.delete(`danhmuc/delete/${id}`);
+  return response.data;
+};

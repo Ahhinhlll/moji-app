@@ -115,12 +115,12 @@ function NhaCungCapAdmin() {
       <table className="table table-bordered text-center align-middle">
         <thead>
           <tr>
-            <th>Mã NCC</th>
-            <th>Tên NCC</th>
+            <th>Mã nhà phân phối</th>
+            <th>Nhà phân phối</th>
             <th>Địa chỉ</th>
-            <th>Số điện thoại</th>
+            <th>Điện thoại</th>
             <th>Email</th>
-            <th>Thao tác</th>
+            <th colSpan={2}>Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -138,6 +138,8 @@ function NhaCungCapAdmin() {
                 >
                   <i className="bi bi-pencil-square"></i>
                 </button>
+              </td>
+              <td>
                 <button
                   className="btn btn-danger"
                   onClick={() => handleDelete(supplier.maNCC)}

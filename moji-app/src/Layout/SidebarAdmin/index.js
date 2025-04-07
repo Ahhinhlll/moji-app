@@ -13,6 +13,11 @@ const SidebarAdmin = ({ isOpen }) => {
   }, [location]);
   const menuItems = [
     {
+      icon: "bi bi-person-circle",
+      label: "Thông tin cá nhân",
+      path: "/admin/ho-so-admin",
+    },
+    {
       icon: "bi bi-list-task",
       label: "Quản lý danh mục",
       path: "/admin/danh-muc-admin",
@@ -33,14 +38,14 @@ const SidebarAdmin = ({ isOpen }) => {
       path: "/admin/don-xuat-admin",
     },
     {
+      icon: "bi bi-clipboard-data",
+      label: "Quản lý hóa đơn nhập",
+      path: "/admin/don-nhap-admin",
+    },
+    {
       icon: "bi bi-bar-chart-line",
       label: "Tổng quan hệ thống",
       path: "/admin/tong-quan",
-    },
-    {
-      icon: "bi bi-person-circle",
-      label: "Thông tin cá nhân",
-      path: "/admin/ho-so-admin",
     },
   ];
 

@@ -6,5 +6,6 @@ values('A00', 'admin', now(), now()),
 		('U11', 'user', now(), now());
         
         select * from vaitro;
+        select * from nguoidung;
 
 

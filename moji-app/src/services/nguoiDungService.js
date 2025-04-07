@@ -21,6 +21,6 @@ export const getRolegetById = async (maVT) => {
 };
 
 export const updatePassword = async (data) => {
-  const response = await request.post("nguoidung/updatepassword", data);
+  const response = await request.patch("nguoidung/updatepassword", data);
   return response.data;
 };

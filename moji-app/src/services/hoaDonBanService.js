@@ -23,6 +23,11 @@ export const createBill = async (data) => {
   const response = await request.post("hoadonban/insert", data);
   return response.data;
 };
+export const updateBill = async (data) => {
+  const response = await request.put("hoadonban/update", data);
+  return response.data;
+};
+
 export const deleteBill = async (id) => {
   const response = await request.delete(`hoadonban/delete/${id}`);
   return response.data;

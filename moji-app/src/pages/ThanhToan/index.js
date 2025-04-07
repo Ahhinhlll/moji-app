@@ -1,8 +1,80 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./thanhToan.scss";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getAllUsers } from "../../services/nguoiDungService";
+import { createBill } from "../../services/hoaDonBanService";
 function ThanhToan() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const cartItems = location.state?.cartItems || [];
+  const [nguoiDung, setNguoiDung] = useState({});
+  const [phuongThuc, setPhuongThuc] = useState("Thanh toán khi nhận hàng");
+  const [voucher, setVoucher] = useState("");
+  const [giamTien, setGiamTien] = useState(0);
+  const [dieuKhoan, setDieuKhoan] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const username = localStorage.getItem("taiKhoan");
+      const allUser = await getAllUsers();
+      const user = allUser.find((user) => user.taiKhoan === username);
+      if (user) {
+        setNguoiDung(user);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const total = cartItems.reduce(
+    (sum, item) => sum + item.giaTien * item.quantity,
+    0
+  );
+  const handleDiscount = () => {
+    switch (voucher) {
+      case "moji10k":
+        setGiamTien(10000);
+        break;
+      case "moji20k":
+        setGiamTien(20000);
+        break;
+      case "moji50k":
+        setGiamTien(50000);
+        break;
+      default:
+        setGiamTien(0);
+        alert("Mã giảm giá không hợp lệ");
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!dieuKhoan) {
+      alert("Vui lòng đồng ý với các điều khoản trước khi thanh toán.");
+      return;
+    }
+    try {
+      const data = await createBill({
+        giamGia: giamTien,
+        phuongThuc: phuongThuc,
+        maND: nguoiDung.maND,
+        CTHoaDonBans: cartItems.map((item) => ({
+          maSP: item.maSP,
+          soLuong: item.quantity,
+        })),
+      });
+      if (data) {
+        alert("Đặt hàng thành công");
+        localStorage.removeItem("gioHang");
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Lỗi thanh toán:", error);
+      alert("Thanh toán thất bại. Vui lòng đăng nhập trước khi thanh toán.");
+      navigate("/dang-nhap");
+    }
+  };
+
   return (
     <div className="checkout-page container mt-4">
       <div className="row">
@@ -15,16 +87,30 @@ function ThanhToan() {
               type="text"
               className="form-control"
               placeholder="Họ tên *"
+              defaultValue={nguoiDung.tenND}
+              disabled
             />
             <input
               type="text"
               className="form-control"
               placeholder="Điện thoại *"
+              defaultValue={nguoiDung.sdt}
+              disabled
             />
             <input
               type="email"
               className="form-control"
               placeholder="Email *"
+              defaultValue={nguoiDung.email}
+              disabled
+            />
+
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Địa chỉ chi tiết *"
+              defaultValue={nguoiDung.diaChi}
+              disabled
             />
 
             <input
@@ -36,11 +122,6 @@ function ThanhToan() {
               type="text"
               className="form-control"
               placeholder="Quận/ Huyện *"
-            />
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Địa chỉ chi tiết *"
             />
             <textarea
               className="form-control"
@@ -68,6 +149,8 @@ function ThanhToan() {
                 type="radio"
                 name="paymentMethod"
                 id="bankTransfer"
+                checked={phuongThuc === "Chuyển khoản trực tiếp"}
+                onChange={() => setPhuongThuc("Chuyển khoản trực tiếp")}
               />
               <label className="form-check-label" htmlFor="bankTransfer">
                 Chuyển khoản trước toàn bộ tiền hàng
@@ -86,7 +169,8 @@ function ThanhToan() {
                 type="radio"
                 name="paymentMethod"
                 id="cod"
-                defaultChecked=""
+                checked={phuongThuc === "Thanh toán khi nhận hàng"}
+                onChange={() => setPhuongThuc("Thanh toán khi nhận hàng")}
               />
               <label className="form-check-label" htmlFor="cod">
                 Thanh toán khi nhận hàng
@@ -126,30 +210,20 @@ function ThanhToan() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
-                  Đồ chơi xếp hình hoa Art exhibition tone xanh 7x11x15 - Mix
-                  <div className="product-price">
-                    Đơn giá: <strong>50.000đ</strong>
-                  </div>
-                </td>
-                <td>3</td>
-                <td>
-                  <strong>150.000đ</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  Tất vớ lưới Cute animal fruit đường kẻ nền ô vuông - Mix
-                  <div className="product-price">
-                    Đơn giá: <strong>25.000đ</strong>
-                  </div>
-                </td>
-                <td>1</td>
-                <td>
-                  <strong>25.000đ</strong>
-                </td>
-              </tr>
+              {cartItems.map((item) => (
+                <tr key={item.maSP}>
+                  <td>
+                    {item.tenSP}-{item.mauSP}
+                    <div className="product-price">
+                      Đơn giá: <strong>{item.giaTien}đ</strong>
+                    </div>
+                  </td>
+                  <td>{item.quantity}</td>
+                  <td>
+                    <strong>{item.giaTien * item.quantity}đ</strong>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
 
@@ -158,22 +232,22 @@ function ThanhToan() {
             <tbody>
               <tr>
                 <td>Tạm tính</td>
-                <td>175.000 đ</td>
+                <td>{total.toLocaleString()}đ</td>
               </tr>
               <tr>
                 <td>Phí vận chuyển</td>
-                <td>0 đ</td>
+                <td>0đ</td>
               </tr>
               <tr>
                 <td>Mã giảm giá</td>
-                <td>0 đ</td>
+                <td>{giamTien.toLocaleString()}đ</td>
               </tr>
               <tr>
                 <td>
                   <strong>Tổng cộng</strong>
                 </td>
                 <td>
-                  <strong>175.000 đ</strong>
+                  <strong>{(total - giamTien).toLocaleString()}đ</strong>
                 </td>
               </tr>
             </tbody>
@@ -185,15 +259,27 @@ function ThanhToan() {
               type="text"
               className="form-control"
               placeholder="Mã giảm giá"
+              value={voucher || ""}
+              onChange={(e) => setVoucher(e.target.value)}
             />
-            <button className="btn btn-pink apDung" type="button">
+            <button
+              className="btn btn-pink apDung"
+              onClick={handleDiscount}
+              type="button"
+            >
               Áp dụng
             </button>
           </div>
 
           {/* Điều khoản */}
           <div className="form-check mb-3">
-            <input className="form-check-input" type="checkbox" id="terms" />
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="terms"
+              checked={dieuKhoan}
+              onChange={() => setDieuKhoan(!dieuKhoan)}
+            />
             <label className="form-check-label" htmlFor="terms">
               Tôi đồng ý với các điều khoản{" "}
               <Link
@@ -208,7 +294,11 @@ function ThanhToan() {
 
           {/* Nút Thanh toán */}
           <div className="text-end">
-            <button className="btn btn-pink thanhToan" type="button">
+            <button
+              className="btn btn-pink thanhToan"
+              type="button"
+              onClick={handlePayment}
+            >
               Thanh toán
             </button>
           </div>

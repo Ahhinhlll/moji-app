@@ -110,10 +110,8 @@ exports.getByIdCTHDB = async (req, res) => {
 
 exports.insert = async (req, res) => {
   try {
-    const { maHDB, ngayBan, giamGia, phuongThuc, maND, CTHoaDonBans } =
-      req.body;
+    const { maHDB, giamGia, phuongThuc, maND, CTHoaDonBans } = req.body;
     let hoaDonBan;
-
     if (maHDB) {
       hoaDonBan = await HoaDonBan.findByPk(maHDB, {
         include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
@@ -123,14 +121,15 @@ exports.insert = async (req, res) => {
         return res.status(404).json({ error: "Hóa đơn bán không tồn tại" });
       }
     } else {
-      if (!ngayBan || !phuongThuc || !maND) {
+      // Nếu chưa có thì tạo mới
+      if (!phuongThuc || !maND) {
         return res
           .status(400)
           .json({ error: "Thiếu thông tin bắt buộc để tạo hóa đơn bán" });
       }
 
       hoaDonBan = await HoaDonBan.create({
-        ngayBan,
+        ngayBan: new Date(),
         trangThai: "Chờ duyệt",
         giamGia: giamGia || 0,
         tongTien: 0,
@@ -139,162 +138,87 @@ exports.insert = async (req, res) => {
       });
     }
 
-    if (CTHoaDonBans && Array.isArray(CTHoaDonBans)) {
-      await Promise.all(
-        CTHoaDonBans.map(async (chiTiet) => {
-          const sanPham = await SanPham.findByPk(chiTiet.maSP);
-          if (!sanPham) {
-            throw new Error(`Sản phẩm ${chiTiet.maSP} không tồn tại`);
-          }
+    // Xử lý từng chi tiết hóa đơn
+    if (Array.isArray(CTHoaDonBans)) {
+      for (const chiTiet of CTHoaDonBans) {
+        const sanPham = await SanPham.findByPk(chiTiet.maSP);
 
-          if (sanPham.soLuong < chiTiet.soLuong) {
-            throw new Error(
-              `Sản phẩm ${sanPham.tenSP} không đủ hàng trong kho`
-            );
-          }
+        if (!sanPham) {
+          throw new Error(`Sản phẩm với mã ${chiTiet.maSP} không tồn tại`);
+        }
 
-          await sanPham.decrement("soLuong", { by: chiTiet.soLuong });
+        if (sanPham.soLuong < chiTiet.soLuong) {
+          throw new Error(`Sản phẩm ${sanPham.tenSP} không đủ hàng trong kho`);
+        }
 
-          await CTHoaDonBan.create({
-            maSP: chiTiet.maSP,
+        // Trừ số lượng trong kho
+        await sanPham.decrement("soLuong", { by: chiTiet.soLuong });
+
+        // Kiểm tra sản phẩm đã tồn tại trong chi tiết hóa đơn chưa
+        const chiTietTonTai = await CTHoaDonBan.findOne({
+          where: {
             maHDB: hoaDonBan.maHDB,
+            maSP: chiTiet.maSP,
+          },
+        });
+
+        if (chiTietTonTai) {
+          // Nếu đã có, cộng dồn số lượng và cập nhật thành tiền
+          const soLuongMoi = chiTietTonTai.soLuong + chiTiet.soLuong;
+          const thanhTienMoi = soLuongMoi * sanPham.giaTien;
+
+          await chiTietTonTai.update({
+            soLuong: soLuongMoi,
+            thanhTien: thanhTienMoi,
+          });
+        } else {
+          // Nếu chưa có, tạo mới chi tiết hóa đơn
+          await CTHoaDonBan.create({
+            maHDB: hoaDonBan.maHDB,
+            maSP: chiTiet.maSP,
             soLuong: chiTiet.soLuong,
             donGia: sanPham.giaTien,
             thanhTien: chiTiet.soLuong * sanPham.giaTien,
           });
-        })
-      );
+        }
+      }
     }
 
-    const tongTienMoi = await CTHoaDonBan.sum("thanhTien", {
+    // Tính lại tổng tiền
+    const tongThanhTien = await CTHoaDonBan.sum("thanhTien", {
       where: { maHDB: hoaDonBan.maHDB },
     });
-    const tongTienSauGiam = Math.max(tongTienMoi - (hoaDonBan.giamGia || 0), 0);
-    await hoaDonBan.update({ tongTien: tongTienSauGiam });
 
+    const tongSauGiam = Math.max(tongThanhTien - (hoaDonBan.giamGia || 0), 0);
+    await hoaDonBan.update({ tongTien: tongSauGiam });
+
+    // Trả về hóa đơn sau khi cập nhật
     const updatedHoaDonBan = await HoaDonBan.findByPk(hoaDonBan.maHDB, {
-      include: [
-        {
-          model: CTHoaDonBan,
-          as: "CTHoaDonBans",
-          include: [
-            { model: SanPham, as: "SanPham", attributes: ["tenSP", "anhSP"] },
-          ],
-        },
-        {
-          model: NguoiDung,
-          as: "NguoiDung",
-          attributes: ["tenND", "sdt", "email", "diaChi"],
-        },
-      ],
+      include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
     });
 
     res.status(201).json(updatedHoaDonBan);
   } catch (error) {
+    console.error("Lỗi tạo/cập nhật hóa đơn:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
 
 exports.update = async (req, res) => {
   try {
-    const { maHDB, ngayBan, giamGia, phuongThuc, maND, maKH, CTHoaDonBans } =
-      req.body;
-
-    const hoaDonBan = await HoaDonBan.findByPk(maHDB, {
-      include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
-    });
-
-    if (!hoaDonBan) {
-      return res.status(404).json({ error: "Hóa đơn bán không tồn tại" });
+    const { maHDB, trangThai } = req.body;
+    const hoaDon = await HoaDonBan.findByPk(maHDB);
+    if (hoaDon !== null) {
+      await hoaDon.update({ trangThai });
+      const updatedHoaDonBan = await HoaDonBan.findByPk(maHDB, {
+        include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
+      });
+      res.status(200).json(updatedHoaDonBan);
+    } else {
+      res.status(404).json({ message: "Hóa đơn không tồn tại" });
     }
-
-    await hoaDonBan.update({ ngayBan, giamGia, phuongThuc, maND, maKH });
-
-    let tongTienMoi = 0;
-
-    if (CTHoaDonBans && Array.isArray(CTHoaDonBans)) {
-      await Promise.all(
-        CTHoaDonBans.map(async (chiTiet) => {
-          const sanPham = await SanPham.findByPk(chiTiet.maSP);
-          if (!sanPham) return;
-
-          const donGia = sanPham.giaBan; // Lấy giá bán
-          const chiTietHDB = await CTHoaDonBan.findOne({
-            where: { maSP: chiTiet.maSP, maHDB },
-          });
-
-          if (chiTietHDB) {
-            // **Cập nhật số lượng sản phẩm trong kho**
-            const chenhLechSoLuong = chiTiet.soLuong - chiTietHDB.soLuong;
-            if (chenhLechSoLuong > 0) {
-              // Tăng số lượng -> Giảm hàng trong kho
-              if (sanPham.soLuong < chenhLechSoLuong) {
-                throw new Error(
-                  `Sản phẩm ${sanPham.tenSP} không đủ hàng trong kho`
-                );
-              }
-              await sanPham.decrement("soLuong", { by: chenhLechSoLuong });
-            } else if (chenhLechSoLuong < 0) {
-              // Giảm số lượng -> Cộng lại hàng trong kho
-              await sanPham.increment("soLuong", {
-                by: Math.abs(chenhLechSoLuong),
-              });
-            }
-
-            // **Cập nhật chi tiết hóa đơn**
-            await chiTietHDB.update({
-              soLuong: chiTiet.soLuong,
-              thanhTien: chiTiet.soLuong * donGia,
-            });
-          } else {
-            // **Thêm sản phẩm mới vào hóa đơn -> Giảm số lượng trong kho**
-            if (sanPham.soLuong < chiTiet.soLuong) {
-              throw new Error(
-                `Sản phẩm ${sanPham.tenSP} không đủ hàng trong kho`
-              );
-            }
-            await sanPham.decrement("soLuong", { by: chiTiet.soLuong });
-
-            await CTHoaDonBan.create({
-              maSP: chiTiet.maSP,
-              maHDB: maHDB,
-              soLuong: chiTiet.soLuong,
-              donGia,
-              thanhTien: chiTiet.soLuong * donGia,
-            });
-          }
-        })
-      );
-    }
-
-    // **Xóa sản phẩm bị loại khỏi hóa đơn và hoàn lại kho**
-    const maSPTrongHoaDon = CTHoaDonBans.map((chiTiet) => chiTiet.maSP);
-    const chiTietHDBDaCo = await CTHoaDonBan.findAll({ where: { maHDB } });
-
-    await Promise.all(
-      chiTietHDBDaCo.map(async (chiTiet) => {
-        if (!maSPTrongHoaDon.includes(chiTiet.maSP)) {
-          const sanPham = await SanPham.findByPk(chiTiet.maSP);
-          if (sanPham) {
-            await sanPham.increment("soLuong", { by: chiTiet.soLuong });
-          }
-          await chiTiet.destroy();
-        }
-      })
-    );
-
-    // **Cập nhật tổng tiền hóa đơn**
-    tongTienMoi = await CTHoaDonBan.sum("thanhTien", { where: { maHDB } });
-    const tongTienSauGiam = Math.max(tongTienMoi - (giamGia || 0), 0);
-    await hoaDonBan.update({ tongTien: tongTienSauGiam });
-
-    const updatedHoaDonBan = await HoaDonBan.findByPk(maHDB, {
-      include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
-    });
-
-    res.status(200).json(updatedHoaDonBan);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
