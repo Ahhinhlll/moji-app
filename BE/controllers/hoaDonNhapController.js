@@ -1,13 +1,37 @@
 const HoaDonNhap = require("../models/hoaDonNhapModel");
 const CTHoaDonNhap = require("../models/ctHoaDonNhapModel");
 const SanPham = require("../models/sanPhamModel");
+const NguoiDung = require("../models/nguoiDungModel");
+const NhaCungCap = require("../models/nhaCungCapModel");
 
 const { Op } = require("sequelize");
 
 exports.getAll = async (req, res) => {
   try {
     const hoaDonNhaps = await HoaDonNhap.findAll({
-      include: [{ model: CTHoaDonNhap, as: "CTHoaDonNhaps" }],
+      include: [
+        {
+          model: NguoiDung,
+          as: "NguoiDung",
+          attributes: ["tenND"],
+        },
+        {
+          model: NhaCungCap,
+          as: "NhaCungCap",
+          attributes: ["tenNCC", "sdt", "diaChi"],
+        },
+        {
+          model: CTHoaDonNhap,
+          as: "CTHoaDonNhaps",
+          include: [
+            {
+              model: SanPham,
+              as: "SanPham",
+              attributes: ["tenSP", "anhSP"],
+            },
+          ],
+        },
+      ],
     });
 
     res.status(200).json(hoaDonNhaps);
@@ -21,7 +45,29 @@ exports.getById = async (req, res) => {
     const { id } = req.params;
 
     const hoaDonNhap = await HoaDonNhap.findByPk(id, {
-      include: [{ model: CTHoaDonNhap, as: "CTHoaDonNhaps" }],
+      include: [
+        {
+          model: NguoiDung,
+          as: "NguoiDung",
+          attributes: ["tenND"],
+        },
+        {
+          model: NhaCungCap,
+          as: "NhaCungCap",
+          attributes: ["tenNCC", "sdt", "diaChi"],
+        },
+        {
+          model: CTHoaDonNhap,
+          as: "CTHoaDonNhaps",
+          include: [
+            {
+              model: SanPham,
+              as: "SanPham",
+              attributes: ["tenSP", "anhSP"],
+            },
+          ],
+        },
+      ],
     });
 
     if (!hoaDonNhap) {
@@ -29,6 +75,46 @@ exports.getById = async (req, res) => {
     }
 
     res.status(200).json(hoaDonNhap);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getAllCTHDN = async (req, res) => {
+  try {
+    const chiTietHoaDonNhaps = await CTHoaDonNhap.findAll({
+      include: [
+        {
+          model: SanPham,
+          as: "SanPham",
+          attributes: ["tenSP", "anhSP"],
+        },
+      ],
+    });
+
+    res.status(200).json(chiTietHoaDonNhaps);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getByIdCTHDN = async (req, res) => {
+  try {
+    const chiTietHoaDonNhap = await CTHoaDonNhap.findByPk(req.params.id, {
+      include: [
+        {
+          model: SanPham,
+          as: "SanPham",
+          attributes: ["tenSP", "anhSP"],
+        },
+      ],
+    });
+
+    if (!chiTietHoaDonNhap) {
+      return res.status(404).json({ error: "Chi tiết hóa đơn không tồn tại" });
+    }
+
+    res.status(200).json(chiTietHoaDonNhap);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -79,7 +165,7 @@ exports.insert = async (req, res) => {
           // Kiểm tra giá nhập < giá sản phẩm
           if (chiTiet.donGia >= sanPham.giaTien) {
             throw new Error(
-              `Giá nhập (${chiTiet.donGia}) phải nhỏ hơn giá hiện tại của sản phẩm (${sanPham.gia})`
+              `Giá nhập (${chiTiet.donGia}) phải nhỏ hơn giá hiện tại của sản phẩm (${sanPham.giaTien})`
             );
           }
           // Thêm chi tiết hóa đơn nhập
@@ -192,72 +278,52 @@ exports.remove = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // mã của chi tiết hóa đơn
+    // Nếu là chi tiết hóa đơn
     const chiTiet = await CTHoaDonNhap.findByPk(id);
     if (chiTiet) {
-      const sanPham = await SanPham.findByPk(chiTiet.maSP);
+      await SanPham.decrement("soLuong", {
+        by: chiTiet.soLuong,
+        where: { maSP: chiTiet.maSP },
+      });
 
-      if (sanPham) {
-        await sanPham.decrement("soLuong", { by: chiTiet.soLuong });
-        const soLuongConLai = sanPham.soLuong - chiTiet.soLuong;
-
-        if (soLuongConLai > 0) {
-          const lanNhapGanNhat = await CTHoaDonNhap.findOne({
-            where: { maSP: sanPham.maSP, ma_CTHDN: { [Op.ne]: id } },
-            order: [["createdAt", "DESC"]],
-          });
-
-          if (lanNhapGanNhat) {
-            await sanPham.update({ giaNhap: lanNhapGanNhat.donGia });
-          }
-        } else {
-          await sanPham.update({ giaNhap: null });
-        }
-      }
+      const maHDN = chiTiet.maHDN;
       await chiTiet.destroy();
+
+      // Tính lại tổng tiền nếu còn chi tiết
+      const tongTien = await CTHoaDonNhap.sum("thanhTien", {
+        where: { maHDN },
+      });
+      await HoaDonNhap.update(
+        { tongTien: tongTien || 0 },
+        { where: { maHDN } }
+      );
+
       return res.status(200).json(chiTiet);
     }
 
-    // kiểm tra xem có phải hóa đơn nhập không
-    const hoaDonNhap = await HoaDonNhap.findByPk(id, {
+    // Nếu là hóa đơn bán
+    const hoaDon = await HoaDonNhap.findByPk(id, {
       include: [{ model: CTHoaDonNhap, as: "CTHoaDonNhaps" }],
     });
-
-    if (!hoaDonNhap) {
+    if (!hoaDon) {
       return res
         .status(404)
-        .json({ error: "Không tìm thấy hóa đơn nhập hoặc chi tiết" });
+        .json({ error: "Không tìm thấy hóa đơn bán hoặc chi tiết" });
     }
 
     await Promise.all(
-      hoaDonNhap.CTHoaDonNhaps.map(async (chiTiet) => {
-        const sanPham = await SanPham.findByPk(chiTiet.maSP);
-        if (sanPham) {
-          await sanPham.decrement("soLuong", { by: chiTiet.soLuong });
-
-          const soLuongConLai = sanPham.soLuong - chiTiet.soLuong;
-          if (soLuongConLai > 0) {
-            const lanNhapGanNhat = await CTHoaDonNhap.findOne({
-              where: {
-                maSP: sanPham.maSP,
-                ma_CTHDN: { [Op.ne]: chiTiet.ma_CTHDN },
-              },
-              order: [["createdAt", "DESC"]],
-            });
-            if (lanNhapGanNhat) {
-              await sanPham.update({ giaNhap: lanNhapGanNhat.donGia });
-            }
-          } else {
-            await sanPham.update({ giaNhap: null });
-          }
-        }
-      })
+      hoaDon.CTHoaDonNhaps.map((ct) =>
+        SanPham.increment("soLuong", {
+          by: ct.soLuong,
+          where: { maSP: ct.maSP },
+        })
+      )
     );
-    const hoaDonNhapCopy = JSON.parse(JSON.stringify(hoaDonNhap));
-    await CTHoaDonNhap.destroy({ where: { maHDN: id } });
-    await hoaDonNhap.destroy();
 
-    return res.status(200).json(hoaDonNhapCopy);
+    await CTHoaDonNhap.destroy({ where: { maHDN: id } });
+    await hoaDon.destroy();
+
+    return res.status(200).json(hoaDon);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

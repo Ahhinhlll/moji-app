@@ -6,6 +6,8 @@ const {
   update,
   remove,
   search,
+  getByIdCTHDN,
+  getAllCTHDN,
 } = require("../controllers/hoaDonNhapController");
 const router = express.Router();
 
@@ -225,5 +227,8 @@ router.delete("/hoadonnhap/delete/:id", remove);
  *         description: Không có tham số tìm kiếm hợp lệ
  */
 router.get("/hoadonnhap/search", search);
+
+router.get("/cthoadonnhap/getall", getAllCTHDN);
+router.get("/cthoadonnhap/getbyid/:id", getByIdCTHDN);
 
 module.exports = router;

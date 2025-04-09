@@ -33,6 +33,10 @@ const CartDropdown = () => {
     const updatedCart = cartItems.filter((item) => item.maSP !== maSP);
     setCartItems(updatedCart);
     localStorage.setItem("gioHang", JSON.stringify(updatedCart));
+
+    if (window.location.pathname === "/gio-hang") {
+      window.location.reload();
+    }
   };
   const getProductImage = (imageArray) => {
     if (Array.isArray(imageArray) && imageArray.length > 0) {

@@ -9,6 +9,7 @@ import {
   getAllImport,
   getImportById,
 } from "../../../services/hoaDonNhapService";
+import { getSupplierById } from "../../../services/nhaCungCapAdmin";
 
 function HoaDonNhapAdmin() {
   if (!localStorage.getItem("token")) {
@@ -18,6 +19,7 @@ function HoaDonNhapAdmin() {
   const [imports, setImports] = useState([]);
   const [users, setUsers] = useState({});
   const [products, setProducts] = useState([]);
+  const [supplier, setSupplier] = useState([]);
   const [selectedImport, setSelectedImport] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
@@ -79,15 +81,39 @@ function HoaDonNhapAdmin() {
     });
   }, [imports]);
 
-  const handleViewDetails = async (maHDB) => {
+  // Lấy thông tin phân phối theo maNCC
+  useEffect(() => {
+    const fetchSupplierDetails = async (maNCC) => {
+      try {
+        const supplier = await getSupplierById(maNCC);
+        console.log("ncc", supplier);
+        setSupplier((prevSupplier) => ({
+          ...prevSupplier,
+          [maNCC]: supplier,
+        }));
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin sản phẩm:", error);
+      }
+    };
+
+    //
+    imports.forEach((imp) => {
+      if (imp.maNCC) {
+        fetchSupplierDetails(imp.maNCC);
+      }
+    });
+  }, [imports]);
+
+  const handleViewDetails = async (maHDN) => {
     try {
-      const billDetail = await getImportById(maHDB);
-      setSelectedImport(billDetail);
+      const importDetail = await getImportById(maHDN);
+      setSelectedImport(importDetail);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách chi tiết hóa đơn:", error);
     }
   };
-  const handleDeleteBill = async (id) => {
+
+  const handleDeleteImport = async (id) => {
     try {
       const data = await deleteImprot(id);
 
@@ -104,6 +130,9 @@ function HoaDonNhapAdmin() {
         );
 
         setSelectedImport(updated);
+      }
+      if (window.location.pathname === "/don-nhap-admin") {
+        window.location.reload();
       }
     } catch (error) {
       console.error("Lỗi khi xóa hóa đơn:", error);
@@ -122,7 +151,10 @@ function HoaDonNhapAdmin() {
         <select
           className="form-select w-auto"
           value={recordsPerPage}
-          onChange={(e) => setRecordsPerPage(Number(e.target.value))}
+          onChange={(e) => {
+            setRecordsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
         >
           <option value={5}>5 bản ghi/trang</option>
           <option value={10}>10 bản ghi/trang</option>
@@ -133,35 +165,30 @@ function HoaDonNhapAdmin() {
       <table className="table table-bordered text-center align-middle">
         <thead>
           <tr>
-            <th>Ngày đặt</th>
-            <th>Khách hàng</th>
-            <th>Điện thoại</th>
-            <th>Địa chỉ</th>
-            <th>Email</th>
+            <th>Nhân viên</th>
+            <th>Ngày nhập</th>
+            <th>Phân phối</th>
+            {/* <th>Giảm giá</th> */}
+            <th>Điện thoại PP</th>
+            <th>Địa chỉ PP</th>
             <th>Tổng tiền</th>
-            <th>Trạng thái</th>
             <th colSpan={2}>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {currentRecords.map((imp) => (
             <tr key={imp.maHDN}>
-              <td>{imp.ngayNhap}</td>
               <td>{users[imp.maND]?.tenND}</td>
-              <td>{users[imp.maND]?.sdt}</td>
-              <td>{users[imp.maND]?.diaChi}</td>
-              <td>{users[imp.maND]?.email}</td>
-              <td>{imp.tongTien}</td>
-              <td>
-                <select className="form-select">
-                  <option value="Chờ duyệt">Chờ duyệt</option>
-                  <option value="Đã duyệt">Đã duyệt</option>
-                </select>
-              </td>
+              <td>{imp.ngayNhap}</td>
+              <td>{supplier[imp.maNCC]?.tenNCC}</td>
+              {/* <td>{imp.giamGia}đ</td> */}
+              <td>{supplier[imp.maNCC]?.sdt}</td>
+              <td>{supplier[imp.maNCC]?.diaChi}</td>
+              <td>{imp.tongTien}đ</td>
               <td>
                 <button
                   className="btn btn-danger me-2"
-                  onClick={() => handleDeleteBill(imp.maHDN)}
+                  onClick={() => handleDeleteImport(imp.maHDN)}
                 >
                   <i className="bi bi-trash"></i>
                 </button>
@@ -183,17 +210,40 @@ function HoaDonNhapAdmin() {
 
       {/* Pagination */}
       <div className="pagination-container">
-        {Array.from({ length: totalPages }, (_, i) => (
+        {/* Nút lùi trang */}
+        {currentPage > 1 && (
           <button
-            key={i + 1}
-            className={`pagination-btn ${
-              currentPage === i + 1 ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage(i + 1)}
+            className="pagination-btn"
+            onClick={() => setCurrentPage(currentPage - 1)}
           >
-            {i + 1}
+            &laquo;
           </button>
-        ))}
+        )}
+
+        {/* Hiển thị các nút trang tăng dần từ 1 đến currentPage (tối thiểu 3) */}
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .slice(0, Math.max(3, currentPage))
+          .map((page) => (
+            <button
+              key={page}
+              className={`pagination-btn ${
+                currentPage === page ? "active" : ""
+              }`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+
+        {/* Nút tiến trang */}
+        {currentPage < totalPages && (
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            &raquo;
+          </button>
+        )}
       </div>
 
       <div className="modal" id="billDetailModal" tabIndex="-1">
@@ -222,7 +272,7 @@ function HoaDonNhapAdmin() {
                 </thead>
                 <tbody>
                   {selectedImport &&
-                    selectedImport.CTHoaDonBans.map((detail, index) => (
+                    selectedImport.CTHoaDonNhaps.map((detail, index) => (
                       <tr key={index}>
                         <td>{products[detail.maSP]?.code}</td>
                         <td>{products[detail.maSP]?.tenSP}</td>
@@ -240,7 +290,7 @@ function HoaDonNhapAdmin() {
                         <td>
                           <button
                             className="btn btn-danger"
-                            onClick={() => handleDeleteBill(detail.ma_CTHDN)}
+                            onClick={() => handleDeleteImport(detail.ma_CTHDN)}
                           >
                             <i className="bi bi-trash"></i>
                           </button>

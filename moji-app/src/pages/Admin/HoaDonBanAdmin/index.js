@@ -19,8 +19,8 @@ function HoaDonBanAdmin() {
   const [bills, setBills] = useState([]);
   const [users, setUsers] = useState({});
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedBill, setSelectedBill] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
 
@@ -29,10 +29,8 @@ function HoaDonBanAdmin() {
       try {
         const data = await getAllBill();
         setBills(data);
-        setLoading(false);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách hóa đơn:", error);
-        setLoading(false);
       }
     };
     fetchBills();
@@ -109,6 +107,9 @@ function HoaDonBanAdmin() {
 
         setSelectedBill(updated);
       }
+      if (window.location.pathname === "/don-nhap-admin") {
+        window.location.reload();
+      }
     } catch (error) {
       console.error("Lỗi khi xóa hóa đơn:", error);
     }
@@ -130,9 +131,6 @@ function HoaDonBanAdmin() {
   const currentRecords = bills.slice(indexOfFirstRecord, indexOfLastRecord);
   const totalPages = Math.ceil(bills.length / recordsPerPage);
 
-  if (loading) {
-    return <div>Đang tải dữ liệu...</div>;
-  }
   return (
     <div className="container-fluid mt-1">
       <h3 className="mb-3 mt-2 text-center">Danh sách đơn hàng xuất</h3>
@@ -140,7 +138,10 @@ function HoaDonBanAdmin() {
         <select
           className="form-select w-auto"
           value={recordsPerPage}
-          onChange={(e) => setRecordsPerPage(Number(e.target.value))}
+          onChange={(e) => {
+            setRecordsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
         >
           <option value={5}>5 bản ghi/trang</option>
           <option value={10}>10 bản ghi/trang</option>
@@ -153,6 +154,7 @@ function HoaDonBanAdmin() {
           <tr>
             <th>Ngày đặt</th>
             <th>Khách hàng</th>
+            {/* <th>Giảm giá</th> */}
             <th>Điện thoại</th>
             <th>Địa chỉ</th>
             <th>Email</th>
@@ -166,10 +168,11 @@ function HoaDonBanAdmin() {
             <tr key={bill.maHDB}>
               <td>{bill.ngayBan}</td>
               <td>{users[bill.maND]?.tenND}</td>
+              {/* <td>{bill.giamGia}đ</td> */}
               <td>{users[bill.maND]?.sdt}</td>
               <td>{users[bill.maND]?.diaChi}</td>
               <td>{users[bill.maND]?.email}</td>
-              <td>{bill.tongTien}</td>
+              <td>{bill.tongTien}đ</td>
               <td>
                 <select
                   className="form-select"
@@ -205,17 +208,40 @@ function HoaDonBanAdmin() {
 
       {/* Pagination */}
       <div className="pagination-container">
-        {Array.from({ length: totalPages }, (_, i) => (
+        {/* Nút lùi trang */}
+        {currentPage > 1 && (
           <button
-            key={i + 1}
-            className={`pagination-btn ${
-              currentPage === i + 1 ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage(i + 1)}
+            className="pagination-btn"
+            onClick={() => setCurrentPage(currentPage - 1)}
           >
-            {i + 1}
+            &laquo;
           </button>
-        ))}
+        )}
+
+        {/* Hiển thị các nút trang tăng dần từ 1 đến currentPage (tối thiểu 3) */}
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .slice(0, Math.max(3, currentPage))
+          .map((page) => (
+            <button
+              key={page}
+              className={`pagination-btn ${
+                currentPage === page ? "active" : ""
+              }`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+
+        {/* Nút tiến trang */}
+        {currentPage < totalPages && (
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            &raquo;
+          </button>
+        )}
       </div>
 
       <div className="modal" id="billDetailModal" tabIndex="-1">

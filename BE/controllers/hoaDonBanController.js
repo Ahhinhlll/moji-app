@@ -226,44 +226,47 @@ exports.remove = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Kiểm tra chi tiết hóa đơn bán
+    // Nếu là chi tiết hóa đơn
     const chiTiet = await CTHoaDonBan.findByPk(id);
     if (chiTiet) {
-      const sanPham = await SanPham.findByPk(chiTiet.maSP);
-      if (sanPham) {
-        // Cộng lại số lượng
-        await sanPham.increment("soLuong", { by: chiTiet.soLuong });
-      }
+      await SanPham.increment("soLuong", {
+        by: chiTiet.soLuong,
+        where: { maSP: chiTiet.maSP },
+      });
+
+      const maHDB = chiTiet.maHDB;
       await chiTiet.destroy();
+
+      // Tính lại tổng tiền nếu còn chi tiết
+      const tongTien = await CTHoaDonBan.sum("thanhTien", { where: { maHDB } });
+      await HoaDonBan.update({ tongTien: tongTien || 0 }, { where: { maHDB } });
+
       return res.status(200).json(chiTiet);
     }
 
-    // Kiểm tra hóa đơn bán
-    const hoaDonBan = await HoaDonBan.findByPk(id, {
+    // Nếu là hóa đơn bán
+    const hoaDon = await HoaDonBan.findByPk(id, {
       include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
     });
-
-    if (!hoaDonBan) {
+    if (!hoaDon) {
       return res
         .status(404)
         .json({ error: "Không tìm thấy hóa đơn bán hoặc chi tiết" });
     }
 
-    // Cộng lại số lượng cho từng sản phẩm
     await Promise.all(
-      hoaDonBan.CTHoaDonBans.map(async (chiTiet) => {
-        const sanPham = await SanPham.findByPk(chiTiet.maSP);
-        if (sanPham) {
-          await sanPham.increment("soLuong", { by: chiTiet.soLuong });
-        }
-      })
+      hoaDon.CTHoaDonBans.map((ct) =>
+        SanPham.increment("soLuong", {
+          by: ct.soLuong,
+          where: { maSP: ct.maSP },
+        })
+      )
     );
 
-    const hoaDonBanCopy = JSON.parse(JSON.stringify(hoaDonBan));
     await CTHoaDonBan.destroy({ where: { maHDB: id } });
-    await hoaDonBan.destroy();
+    await hoaDon.destroy();
 
-    return res.status(200).json(hoaDonBanCopy);
+    return res.status(200).json(hoaDon);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

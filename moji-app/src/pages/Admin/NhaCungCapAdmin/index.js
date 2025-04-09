@@ -38,9 +38,23 @@ function NhaCungCapAdmin() {
     fetchSuppliers();
   }, []);
 
+  const resetFormData = () => {
+    setFormData({
+      tenNCC: "",
+      diaChi: "",
+      sdt: "",
+      email: "",
+    });
+  };
+  // sửa 1
   const handleEditClick = (supplier) => {
     setSelectedSupplier(supplier);
-    setFormData({ ...supplier });
+    setFormData({
+      tenNCC: supplier.tenNCC || "",
+      diaChi: supplier.diaChi || "",
+      sdt: supplier.sdt || "",
+      email: supplier.email || "",
+    });
     setModalOpen(true);
   };
 
@@ -95,7 +109,10 @@ function NhaCungCapAdmin() {
         <select
           className="form-select w-auto"
           value={recordsPerPage}
-          onChange={(e) => setRecordsPerPage(Number(e.target.value))}
+          onChange={(e) => {
+            setRecordsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
         >
           <option value={5}>5 bản ghi/trang</option>
           <option value={10}>10 bản ghi/trang</option>
@@ -105,6 +122,7 @@ function NhaCungCapAdmin() {
           className="btn-add"
           onClick={() => {
             setSelectedSupplier(null);
+            resetFormData();
             setModalOpen(true);
           }}
         >
@@ -152,18 +170,42 @@ function NhaCungCapAdmin() {
         </tbody>
       </table>
 
+      {/* Pagination */}
       <div className="pagination-container">
-        {Array.from({ length: totalPages }, (_, i) => (
+        {/* Nút lùi trang */}
+        {currentPage > 1 && (
           <button
-            key={i + 1}
-            className={`pagination-btn ${
-              currentPage === i + 1 ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage(i + 1)}
+            className="pagination-btn"
+            onClick={() => setCurrentPage(currentPage - 1)}
           >
-            {i + 1}
+            &laquo;
           </button>
-        ))}
+        )}
+
+        {/* Hiển thị các nút trang tăng dần từ 1 đến currentPage (tối thiểu 3) */}
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .slice(0, Math.max(3, currentPage))
+          .map((page) => (
+            <button
+              key={page}
+              className={`pagination-btn ${
+                currentPage === page ? "active" : ""
+              }`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+
+        {/* Nút tiến trang */}
+        {currentPage < totalPages && (
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            &raquo;
+          </button>
+        )}
       </div>
 
       {modalOpen && (
@@ -192,6 +234,7 @@ function NhaCungCapAdmin() {
                   id="diaChi"
                   className="form-control"
                   placeholder="Địa chỉ"
+                  value={formData.diaChi}
                   onChange={handleInputChange}
                 />
               </div>
@@ -201,6 +244,7 @@ function NhaCungCapAdmin() {
                   id="sdt"
                   className="form-control"
                   placeholder="Số điện thoại"
+                  value={formData.sdt}
                   onChange={handleInputChange}
                 />
               </div>
@@ -210,6 +254,7 @@ function NhaCungCapAdmin() {
                   id="email"
                   className="form-control"
                   placeholder="Email"
+                  value={formData.email}
                   onChange={handleInputChange}
                 />
               </div>
@@ -218,7 +263,8 @@ function NhaCungCapAdmin() {
                 className="btn-save"
                 onClick={selectedSupplier ? handleUpdate : handleSubmit}
               >
-                <i className="bi bi-save"></i> Lưu
+                <i className="bi bi-save"></i>{" "}
+                {selectedSupplier ? "Cập nhật" : "Thêm"}
               </button>
             </div>
           </div>

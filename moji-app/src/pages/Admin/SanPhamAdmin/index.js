@@ -35,6 +35,19 @@ function SanPhamAdmin() {
     anhSP: [],
   });
 
+  const resetFormData = () => {
+    setFormData({
+      tenSP: "",
+      code: "",
+      mauSP: "",
+      moTa: "",
+      soLuong: 0,
+      giaTien: "",
+      ma_CTDM: "",
+      anhSP: [],
+    });
+  };
+
   // mở modal update
   const handleEditClick = (product) => {
     setSelectedProduct(product);
@@ -151,7 +164,10 @@ function SanPhamAdmin() {
           <select
             className="form-select w-auto"
             value={recordsPerPage}
-            onChange={(e) => setRecordsPerPage(Number(e.target.value))}
+            onChange={(e) => {
+              setRecordsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
           >
             <option value={5}>5 bản ghi/trang</option>
             <option value={10}>10 bản ghi/trang</option>
@@ -163,6 +179,7 @@ function SanPhamAdmin() {
           className="btn-add"
           onClick={() => {
             setSelectedProduct(null);
+            resetFormData();
             setModalOpen(true);
           }}
         >
@@ -224,17 +241,40 @@ function SanPhamAdmin() {
 
       {/* Pagination */}
       <div className="pagination-container">
-        {Array.from({ length: totalPages }, (_, i) => (
+        {/* Nút lùi trang */}
+        {currentPage > 1 && (
           <button
-            key={i + 1}
-            className={`pagination-btn ${
-              currentPage === i + 1 ? "active" : ""
-            }`}
-            onClick={() => setCurrentPage(i + 1)}
+            className="pagination-btn"
+            onClick={() => setCurrentPage(currentPage - 1)}
           >
-            {i + 1}
+            &laquo;
           </button>
-        ))}
+        )}
+
+        {/* Hiển thị các nút trang tăng dần từ 1 đến currentPage (tối thiểu 3) */}
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .slice(0, Math.max(3, currentPage))
+          .map((page) => (
+            <button
+              key={page}
+              className={`pagination-btn ${
+                currentPage === page ? "active" : ""
+              }`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+
+        {/* Nút tiến trang */}
+        {currentPage < totalPages && (
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            &raquo;
+          </button>
+        )}
       </div>
 
       {/* Modal */}
@@ -265,6 +305,7 @@ function SanPhamAdmin() {
                 <select
                   id="ma_CTDM"
                   className="form-control"
+                  value={formData.ma_CTDM}
                   onChange={handleInputChange}
                 >
                   <option value={0}>Chọn danh mục</option>
@@ -281,6 +322,7 @@ function SanPhamAdmin() {
                   id="code"
                   className="form-control"
                   placeholder="Code sản phẩm"
+                  value={formData.code}
                   onChange={handleInputChange}
                 />
               </div>
@@ -290,6 +332,7 @@ function SanPhamAdmin() {
                   id="mauSP"
                   className="form-control"
                   placeholder="Màu sắc"
+                  value={formData.mauSP}
                   onChange={handleInputChange}
                 />
               </div>
@@ -300,6 +343,7 @@ function SanPhamAdmin() {
                   id="anhSP"
                   className="form-control"
                   placeholder="Ảnh sản phẩm"
+                  value={formData.anhSP}
                   onChange={handleInputChange}
                 />
               </div>
@@ -310,6 +354,7 @@ function SanPhamAdmin() {
                   id="moTa"
                   className="form-control"
                   placeholder="Mô tả"
+                  value={formData.moTa}
                   onChange={handleInputChange}
                 />
               </div>
@@ -320,6 +365,7 @@ function SanPhamAdmin() {
                   id="soLuong"
                   className="form-control"
                   placeholder="Số lượng"
+                  value={formData.soLuong}
                   readOnly
                   onChange={handleInputChange}
                 />
@@ -331,6 +377,7 @@ function SanPhamAdmin() {
                   id="giaTien"
                   className="form-control"
                   placeholder="Giá thành"
+                  value={formData.giaTien}
                   onChange={handleInputChange}
                 />
               </div>
@@ -340,7 +387,8 @@ function SanPhamAdmin() {
                 onClick={selectedProduct ? handleUpdate : handleSubmit}
                 //onClick={handleSubmit}
               >
-                <i className="bi bi-save"></i> Lưu
+                <i className="bi bi-save"></i>{" "}
+                {selectedProduct ? "Cập nhật" : "Thêm"}
               </button>
             </div>
           </div>
