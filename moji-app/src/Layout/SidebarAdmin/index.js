@@ -43,6 +43,11 @@ const SidebarAdmin = ({ isOpen }) => {
       path: "/admin/don-nhap-admin",
     },
     {
+      icon: "bi bi-person-lines-fill",
+      label: "Quản lý tài khoản",
+      path: "/admin/tai-khoan-admin",
+    },
+    {
       icon: "bi bi-bar-chart-line",
       label: "Tổng quan hệ thống",
       path: "/admin/tong-quan",

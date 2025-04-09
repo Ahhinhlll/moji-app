@@ -15,6 +15,21 @@ export const createUser = async (data) => {
   return response.data;
 };
 
+export const updateUser = async (data) => {
+  const response = await request.put("nguoidung/update", data);
+  return response.data;
+};
+
+export const deleteUser = async (id) => {
+  const response = await request.delete(`nguoidung/delete/${id}`);
+  return response.data;
+};
+
+export const searchUser = async (query) => {
+  const response = await request.get(`nguoidung/search?q=${query}`);
+  return response.data;
+};
+
 export const getRolegetById = async (maVT) => {
   const response = await request.get(`vaitro/getbyid/${maVT}`);
   return response.data.tenVT;

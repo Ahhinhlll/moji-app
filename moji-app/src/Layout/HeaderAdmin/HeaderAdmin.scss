@@ -32,36 +32,57 @@
 }
 
 /* Giữa */
+// .header-center {
+//   flex: 1;
+//   display: flex;
+//   justify-content: center;
+
+//   .search-form {
+//     display: flex;
+//     align-items: center;
+//     width: 500px;
+//     max-width: 100%;
+//     background: #f1f1f1;
+//     border-radius: 20px;
+//     padding: 5px 10px;
+
+//     .search-input {
+//       flex: 1;
+//       border: none;
+//       background: transparent;
+//       outline: none;
+//       padding: 8px;
+//     }
+
+//     .search-icon {
+//       padding: 5px;
+//       cursor: pointer;
+//       color: #000000;
+//       font-size: 20px;
+//       font-weight: bold;
+//       &:hover {
+//         color: #ed6e94;
+//       }
+//     }
+//   }
+// }
 .header-center {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-
-  .search-form {
+  .contact-info {
+    flex: 1;
     display: flex;
+    justify-content: flex-end;
+    gap: 30px;
     align-items: center;
-    width: 500px;
-    max-width: 100%;
-    background: #f1f1f1;
-    border-radius: 20px;
-    padding: 5px 10px;
 
-    .search-input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      outline: none;
-      padding: 8px;
-    }
+    a {
+      text-decoration: none;
+      color: white;
 
-    .search-icon {
-      padding: 5px;
-      cursor: pointer;
-      color: #000000;
-      font-size: 20px;
-      font-weight: bold;
-      &:hover {
-        color: #ed6e94;
+      i {
+        font-size: 20px;
+        &:hover {
+          color: #333;
+        }
       }
     }
   }

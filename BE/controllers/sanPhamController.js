@@ -1,4 +1,6 @@
 const SanPham = require("../models/sanPhamModel");
+const CTDanhMuc = require("../models/ctDanhMucModel");
+const Sequelize = require("../config/database");
 const { Op } = require("sequelize");
 
 exports.getAll = async (req, res) => {
@@ -84,13 +86,30 @@ exports.remove = async (req, res) => {
 
 exports.search = async (req, res) => {
   try {
+    const keyword = req.query.q || "";
+
     const sanPhams = await SanPham.findAll({
-      where: {
-        tenSP: {
-          [Op.like]: `%${req.query.q}%`,
+      include: [
+        {
+          model: CTDanhMuc,
+          as: "CTDanhMuc",
+          required: false,
         },
+      ],
+      where: {
+        [Op.or]: [
+          { tenSP: { [Op.like]: `%${keyword}%` } },
+          { ma_CTDM: { [Op.like]: `%${keyword}%` } },
+          { soLuong: { [Op.like]: `%${keyword}%` } },
+          { giaTien: { [Op.like]: `%${keyword}%` } },
+          { mauSP: { [Op.like]: `%${keyword}%` } },
+          Sequelize.where(Sequelize.col("CTDanhMuc.tenCTDM"), {
+            [Op.like]: `%${keyword}%`,
+          }),
+        ],
       },
     });
+
     res.status(200).json(sanPhams);
   } catch (error) {
     res.status(400).json({ error: error.message });

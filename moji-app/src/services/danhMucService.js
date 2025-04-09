@@ -32,3 +32,7 @@ export const deleteCategory = async (id) => {
   const response = await request.delete(`danhmuc/delete/${id}`);
   return response.data;
 };
+export const searchCategory = async (query) => {
+  const response = await request.get(`danhmuc/search?q=${query}`);
+  return response.data;
+};

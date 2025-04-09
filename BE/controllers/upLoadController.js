@@ -35,3 +35,20 @@ exports.uploadImage = (req, res) => {
     res.json({ imageUrls });
   });
 };
+
+exports.getAllImages = (req, res) => {
+  fs.readdir(uploadDir, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: "Không đọc được thư mục." });
+    }
+
+    // Chỉ lọc file ảnh (jpg, jpeg, png, gif)
+    const imageFiles = files.filter((file) =>
+      /\.(jpg|jpeg|png|gif)$/i.test(file)
+    );
+
+    // Trả về đường dẫn ảnh
+    const imagePaths = imageFiles.map((file) => `/uploads/${file}`);
+    res.json(imagePaths);
+  });
+};

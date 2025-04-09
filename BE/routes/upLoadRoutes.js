@@ -1,5 +1,8 @@
 const express = require("express");
-const { uploadImage } = require("../controllers/upLoadController"); // Correct function name
+const {
+  uploadImage,
+  getAllImages,
+} = require("../controllers/upLoadController"); // Correct function name
 const router = express.Router();
 
 /**
@@ -41,5 +44,7 @@ const router = express.Router();
  *         description: No files uploaded
  */
 router.post("/upload", uploadImage);
+
+router.get("/images", getAllImages);
 
 module.exports = router;

@@ -133,20 +133,20 @@ function HoaDonBanAdmin() {
 
   return (
     <div className="container-fluid mt-1">
-      <h3 className="mb-3 mt-2 text-center">Danh sách đơn hàng xuất</h3>
-      <div className="mb-3">
-        <select
-          className="form-select w-auto"
-          value={recordsPerPage}
-          onChange={(e) => {
-            setRecordsPerPage(Number(e.target.value));
-            setCurrentPage(1);
-          }}
-        >
-          <option value={5}>5 bản ghi/trang</option>
-          <option value={10}>10 bản ghi/trang</option>
-          <option value={15}>15 bản ghi/trang</option>
-        </select>
+      <h3 className="mb-5 mt-2 text-center">Danh sách đơn hàng xuất</h3>
+      <div className="d-flex justify-content-end mb-2">
+        <div className="quanly-center">
+          <form className="search-form">
+            <input
+              type="search"
+              className="search-input"
+              placeholder="Tìm kiếm thông tin ...."
+            />
+            <span className="search-icon">
+              <i className="bi bi-search"></i>
+            </span>
+          </form>
+        </div>
       </div>
       {/* new Date(....).toLocaleDateString(vi-VN) */}
       <table className="table table-bordered text-center align-middle">
@@ -207,41 +207,69 @@ function HoaDonBanAdmin() {
       </table>
 
       {/* Pagination */}
-      <div className="pagination-container">
-        {/* Nút lùi trang */}
-        {currentPage > 1 && (
-          <button
-            className="pagination-btn"
-            onClick={() => setCurrentPage(currentPage - 1)}
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        {/* Select số bản ghi */}
+        <div className="d-flex align-items-center">
+          <label className="me-2 fw-semibold">Hiển thị:</label>
+          <select
+            className="form-select w-auto"
+            value={recordsPerPage}
+            onChange={(e) => {
+              setRecordsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
           >
-            &laquo;
-          </button>
-        )}
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+          </select>
+        </div>
 
-        {/* Hiển thị các nút trang tăng dần từ 1 đến currentPage (tối thiểu 3) */}
-        {Array.from({ length: totalPages }, (_, i) => i + 1)
-          .slice(0, Math.max(3, currentPage))
-          .map((page) => (
-            <button
-              key={page}
-              className={`pagination-btn ${
-                currentPage === page ? "active" : ""
-              }`}
-              onClick={() => setCurrentPage(page)}
-            >
-              {page}
-            </button>
-          ))}
+        {/* Phân trang */}
+        <nav>
+          <ul className="pagination-container">
+            {currentPage > 1 && (
+              <li>
+                <button
+                  className="pagination-btn"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  &laquo;
+                </button>
+              </li>
+            )}
 
-        {/* Nút tiến trang */}
-        {currentPage < totalPages && (
-          <button
-            className="pagination-btn"
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            &raquo;
-          </button>
-        )}
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .slice(
+                Math.max(currentPage - 2, 0),
+                Math.min(currentPage + 1, totalPages)
+              )
+              .map((page) => (
+                <li key={page}>
+                  <button
+                    className={`pagination-btn ${
+                      currentPage === page ? "active" : ""
+                    }`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                </li>
+              ))}
+
+            {currentPage < totalPages && (
+              <li>
+                <button
+                  className="pagination-btn"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  &raquo;
+                </button>
+              </li>
+            )}
+          </ul>
+        </nav>
       </div>
 
       <div className="modal" id="billDetailModal" tabIndex="-1">

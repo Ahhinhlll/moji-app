@@ -25,6 +25,11 @@ app.use(
 );
 
 app.use(express.json());
+// app.use((req, res, next) => {
+//   console.log("Body nhận được:", req.body);
+//   next();
+// });
+
 app.use("/uploads", express.static("public/uploads"));
 
 app.use("/api", danhMucRoutes);

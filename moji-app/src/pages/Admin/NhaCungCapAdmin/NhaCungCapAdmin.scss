@@ -75,39 +75,3 @@
     color: black;
   }
 }
-
-// Phân trang
-.pagination-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-
-  .pagination-btn {
-    background: #f8f9fa;
-    border: 1px solid #ddd;
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-
-    &:hover {
-      background: #ed6e94;
-      color: white;
-    }
-
-    &.active {
-      background: #ed6e94;
-      color: white;
-      font-weight: bold;
-    }
-  }
-
-  .pagination-btn:first-child {
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-  }
-
-  .pagination-btn:last-child {
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-  }
-}

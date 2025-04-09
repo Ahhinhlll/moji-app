@@ -47,7 +47,7 @@ function HeaderAdmin({ toggleSidebar }) {
         <img className="logo" src="/image/logo.png" alt="Logo" />
       </div>
 
-      <div className="header-center">
+      {/* <div className="header-center">
         <form className="search-form">
           <input
             type="search"
@@ -58,6 +58,17 @@ function HeaderAdmin({ toggleSidebar }) {
             <i className="bi bi-search"></i>
           </span>
         </form>
+      </div> */}
+
+      <div className="header-center">
+        <div className="contact-info">
+          <Link to="#!" className="contact-item">
+            <i className="fa fa-envelope" /> MojiAppNe@gmail.com
+          </Link>
+          <Link to="#!" className="contact-item">
+            <i className="fa fa-phone" /> 0387 238 815
+          </Link>
+        </div>
       </div>
 
       <div className="header-right">

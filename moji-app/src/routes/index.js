@@ -16,6 +16,7 @@ import NhaCungCapAdmin from "./../pages/Admin/NhaCungCapAdmin/index";
 import HoaDonBanAdmin from "../pages/Admin/HoaDonBanAdmin";
 import HoSoAdmin from "./../pages/Admin/HoSoAdmin/index";
 import HoaDonNhapAdmin from "../pages/Admin/HoaDonNhapAdmin";
+import TaiKhoanAdmin from "../pages/Admin/TaiKhoanAdmin";
 
 export const routes = [
   // user
@@ -88,6 +89,10 @@ export const routes = [
       {
         path: "don-nhap-admin",
         element: <HoaDonNhapAdmin />,
+      },
+      {
+        path: "tai-khoan-admin",
+        element: <TaiKhoanAdmin />,
       },
     ],
   },
