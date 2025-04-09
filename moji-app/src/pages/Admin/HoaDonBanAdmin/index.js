@@ -1,11 +1,12 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   deleteBill,
   getAllBill,
   getBillById,
+  searchBill,
   updateBill,
 } from "../../../services/hoaDonBanService";
 import { getUserById } from "../../../services/nguoiDungService";
@@ -20,6 +21,8 @@ function HoaDonBanAdmin() {
   const [users, setUsers] = useState({});
   const [products, setProducts] = useState([]);
   const [selectedBill, setSelectedBill] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchTimeoutRef = useRef(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
@@ -126,6 +129,31 @@ function HoaDonBanAdmin() {
     }
   };
 
+  const handleSearch = async (query) => {
+    try {
+      const data = await searchBill(query);
+      setBills(data);
+    } catch (error) {
+      console.log("lỗi tìm kiếm nhà cung cấp: ", error);
+    }
+  };
+
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      if (searchQuery.trim() !== "") {
+        handleSearch(searchQuery);
+      } else {
+        getAllBill().then(setBills);
+      }
+    }, 300);
+
+    return () => clearTimeout(searchTimeoutRef.current);
+  }, [searchQuery]);
+
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = bills.slice(indexOfFirstRecord, indexOfLastRecord);
@@ -136,11 +164,13 @@ function HoaDonBanAdmin() {
       <h3 className="mb-5 mt-2 text-center">Danh sách đơn hàng xuất</h3>
       <div className="d-flex justify-content-end mb-2">
         <div className="quanly-center">
-          <form className="search-form">
+          <form className="search-form" onSubmit={(e) => e.preventDefault()}>
             <input
               type="search"
               className="search-input"
               placeholder="Tìm kiếm thông tin ...."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <span className="search-icon">
               <i className="bi bi-search"></i>

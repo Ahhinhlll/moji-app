@@ -2,7 +2,7 @@ const HoaDonBan = require("../models/hoaDonBanModel");
 const CTHoaDonBan = require("../models/ctHoaDonBanModel");
 const SanPham = require("../models/sanPhamModel");
 const NguoiDung = require("../models/nguoiDungModel");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 
 exports.getAll = async (req, res) => {
   try {
@@ -274,27 +274,34 @@ exports.remove = async (req, res) => {
 
 exports.search = async (req, res) => {
   try {
-    const { q } = req.query;
-    if (!q) {
-      return res.status(400).json({
-        error: "Vui lòng nhập giá trị tìm kiếm (ngày bán hoặc mã sản phẩm).",
-      });
-    }
+    const keyword = req.query.q || "";
 
-    if (/^\d{4}-\d{2}-\d{2}$/.test(q)) {
-      const hoaDonBans = await HoaDonBan.findAll({
-        where: { ngayBan: { [Op.eq]: new Date(q) } },
-        include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
-      });
-
-      return res.status(200).json(hoaDonBans);
-    }
-
-    const chiTietHDBs = await CTHoaDonBan.findAll({
-      where: { maSP: q },
+    const hoaDonBans = await HoaDonBan.findAll({
+      include: [
+        {
+          model: CTHoaDonBan,
+          as: "CTHoaDonBans",
+        },
+        {
+          model: NguoiDung,
+          as: "NguoiDung",
+          required: false,
+        },
+      ],
+      where: {
+        [Op.or]: [
+          Sequelize.where(Sequelize.col("NguoiDung.tenND"), {
+            [Op.like]: `%${keyword}%`,
+          }),
+          Sequelize.where(Sequelize.fn("DATE", Sequelize.col("ngayBan")), {
+            [Op.like]: `%${keyword}%`,
+          }),
+          { tongTien: { [Op.like]: `%${keyword}%` } },
+        ],
+      },
     });
 
-    return res.status(200).json(chiTietHDBs);
+    res.status(200).json(hoaDonBans);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

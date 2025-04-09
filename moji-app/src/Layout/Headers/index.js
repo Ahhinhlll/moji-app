@@ -90,8 +90,7 @@ function Header() {
             {/* Thanh tìm kiếm */}
             <div className="input-group mx-auto" style={{ maxWidth: "500px" }}>
               <input
-                autoComplete="off"
-                type="text"
+                type="search"
                 className="form-control border-pink"
                 placeholder="Tìm kiếm sản phẩm"
               />

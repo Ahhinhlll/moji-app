@@ -32,3 +32,7 @@ export const deleteBill = async (id) => {
   const response = await request.delete(`hoadonban/delete/${id}`);
   return response.data;
 };
+export const searchBill = async (query) => {
+  const response = await request.get(`hoadonban/search?q=${query}`);
+  return response.data;
+};

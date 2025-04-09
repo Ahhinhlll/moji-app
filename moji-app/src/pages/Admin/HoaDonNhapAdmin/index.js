@@ -1,15 +1,23 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { useEffect, useState } from "react";
-import { getUserById } from "../../../services/nguoiDungService";
-import { getProductById } from "../../../services/sanPhamService";
+import { useEffect, useRef, useState } from "react";
+import { getAllUsers, getUserById } from "../../../services/nguoiDungService";
+import {
+  getAllProducts,
+  getProductById,
+} from "../../../services/sanPhamService";
 import {
   deleteImprot,
   getAllImport,
   getImportById,
+  insertImport,
+  searchImprot,
 } from "../../../services/hoaDonNhapService";
-import { getSupplierById } from "../../../services/nhaCungCapAdmin";
+import {
+  getAllSuppliers,
+  getSupplierById,
+} from "../../../services/nhaCungCapAdmin";
 
 function HoaDonNhapAdmin() {
   if (!localStorage.getItem("token")) {
@@ -21,9 +29,107 @@ function HoaDonNhapAdmin() {
   const [products, setProducts] = useState([]);
   const [supplier, setSupplier] = useState([]);
   const [selectedImport, setSelectedImport] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchTimeoutRef = useRef(null);
+
+  const [newCTHoaDons, setNewCTHoaDons] = useState([
+    {
+      maSP: "",
+      soLuong: 0,
+      donGia: 0,
+    },
+  ]);
+
+  const addCTHoaDon = () => {
+    setNewCTHoaDons((prevState) => [
+      ...prevState,
+      { maSP: "", soLuong: 0, donGia: 0 },
+    ]);
+  };
+
+  const removeCTHoaDon = (index) => {
+    const updated = [...newCTHoaDons];
+    updated.splice(index, 1);
+    setNewCTHoaDons(updated);
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(5);
+  //
 
+  const [nhaCungCaps, setNhaCungCaps] = useState([]);
+  const [sanPhams, setSanPhams] = useState([]);
+  const [nguoiDung, setNguoiDung] = useState(null);
+
+  const [formData, setFormData] = useState({
+    maNCC: "",
+    maSP: "",
+    phuongThuc: "",
+    soLuong: 0,
+    donGia: 0,
+    giamGia: 0,
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const nccs = await getAllSuppliers();
+      const sps = await getAllProducts();
+      setNhaCungCaps(nccs);
+      setSanPhams(sps);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const username = localStorage.getItem("taiKhoan");
+      const allUser = await getAllUsers();
+      const user = allUser.find((user) => user.taiKhoan === username);
+      if (user) {
+        setNguoiDung(user);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleAddImport = async () => {
+    try {
+      const payload = {
+        maNCC: formData.maNCC,
+        maND: nguoiDung.maND,
+        phuongThuc: formData.phuongThuc,
+        //ngayNhap: new Date(),
+        giamGia: formData.giamGia,
+        CTHoaDonNhaps: [
+          {
+            maSP: formData.maSP,
+            soLuong: formData.soLuong,
+            donGia: formData.donGia,
+          },
+        ],
+      };
+
+      const result = await insertImport(payload);
+      if (result) {
+        setImports((prev) => [...prev, result]);
+        // Reset form
+        setFormData({
+          phuongThuc: "",
+          maNCC: "",
+          giamGia: 0,
+          maSP: "",
+          soLuong: 0,
+          donGia: 0,
+        });
+        setNewCTHoaDons([{ maSP: "", soLuong: 0, donGia: 0 }]);
+        document.querySelector("#addImportModal .btn-close").click();
+      }
+    } catch (error) {
+      console.error("Lỗi khi thêm hóa đơn nhập:", error);
+    }
+  };
+
+  //
   useEffect(() => {
     const fetchBills = async () => {
       try {
@@ -139,6 +245,31 @@ function HoaDonNhapAdmin() {
     }
   };
 
+  const handleSearch = async (query) => {
+    try {
+      const data = await searchImprot(query);
+      setImports(data);
+    } catch (error) {
+      console.log("lỗi tìm kiếm nhà cung cấp: ", error);
+    }
+  };
+
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      if (searchQuery.trim() !== "") {
+        handleSearch(searchQuery);
+      } else {
+        getAllImport().then(setImports);
+      }
+    }, 300);
+
+    return () => clearTimeout(searchTimeoutRef.current);
+  }, [searchQuery]);
+
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = imports.slice(indexOfFirstRecord, indexOfLastRecord);
@@ -148,16 +279,22 @@ function HoaDonNhapAdmin() {
     <div className="container-fluid mt-1">
       <h3 className="mb-5 mt-2 text-center">Danh sách đơn hàng xuất</h3>
       <div className="d-flex justify-content-between align-items-center mb-2">
-        <button className="btn-add">
-          <i className="bi bi-file-earmark-plus"></i> Thêm danh mục
+        <button
+          className="btn-add"
+          data-bs-toggle="modal"
+          data-bs-target="#addImportModal"
+        >
+          <i className="bi bi-file-earmark-plus"></i> Thêm hóa đơn
         </button>
 
         <div className="quanly-center">
-          <form className="search-form">
+          <form className="search-form" onSubmit={(e) => e.preventDefault()}>
             <input
               type="search"
               className="search-input"
               placeholder="Tìm kiếm thông tin ...."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <span className="search-icon">
               <i className="bi bi-search"></i>
@@ -183,7 +320,7 @@ function HoaDonNhapAdmin() {
           {currentRecords.map((imp) => (
             <tr key={imp.maHDN}>
               <td>{users[imp.maND]?.tenND}</td>
-              <td>{imp.ngayNhap}</td>
+              <td>{new Date(imp.ngayNhap).toLocaleDateString()}</td>
               <td>{supplier[imp.maNCC]?.tenNCC}</td>
               {/* <td>{imp.giamGia}đ</td> */}
               <td>{supplier[imp.maNCC]?.sdt}</td>
@@ -331,6 +468,157 @@ function HoaDonNhapAdmin() {
                     ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* form modal */}
+
+      <div className="modal fade" id="addImportModal" tabIndex="-1">
+        <div className="modal-dialog modal-md">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title ">Thêm thông tin mới</h5>
+              <button className="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">Nhân viên</label>
+                <input
+                  type="text"
+                  className="form-control mb-3"
+                  value={nguoiDung ? nguoiDung.tenND : ""}
+                  disabled
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Phương thức</label>
+                <select
+                  className="form-select mb-3"
+                  value={formData.phuongThuc}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      phuongThuc: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">-- Chọn phương thức --</option>
+                  <option value="Thanh toán khi nhận hàng">
+                    Thanh toán khi nhận hàng
+                  </option>
+                  <option value="Chuyển khoản trực tiếp">
+                    Chuyển khoản trực tiếp
+                  </option>
+                </select>
+              </div>
+
+              <div className="mb-3 me-2">
+                <label className="form-label">Phân phối</label>
+
+                <select
+                  className="form-select"
+                  value={formData.maNCC}
+                  onChange={(e) =>
+                    setFormData({ ...formData, maNCC: e.target.value })
+                  }
+                >
+                  <option value="">-- Chọn nhà cung cấp --</option>
+                  {nhaCungCaps.map((ncc) => (
+                    <option key={ncc.maNCC} value={ncc.maNCC}>
+                      {ncc.tenNCC}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Giảm giá</label>
+                <select
+                  className="form-select"
+                  value={formData.giamGia}
+                  onChange={(e) =>
+                    setFormData({ ...formData, giamGia: e.target.value })
+                  }
+                >
+                  <option value={0}>0</option>
+                  <option value={5}>moji5k</option>
+                  <option value={10}>moji10k</option>
+                  <option value={15}>moji15k</option>
+                  <option value={20}>moji20k</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Chi tiết hóa đơn:</label>
+                {newCTHoaDons.map((ct, index) => (
+                  <div key={index} className="d-flex align-items-center">
+                    <div className="w-100 mb-3 me-2">
+                      <label className="form-label">Sản phẩm</label>
+                      <select
+                        className="form-select mb-3 "
+                        value={formData.maSP}
+                        onChange={(e) =>
+                          setFormData({ ...formData, maSP: e.target.value })
+                        }
+                      >
+                        <option value="">-- Chọn sản phẩm --</option>
+                        {sanPhams.map((sp) => (
+                          <option key={sp.maSP} value={sp.maSP}>
+                            {sp.tenSP}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="d-flex w-100 mb-3">
+                      <div className="mb-3 me-2 flex-grow-1">
+                        <label className="form-label">Số lượng</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          min={0}
+                          value={formData.soLuong}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              soLuong: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="mb-3 me-2 flex-grow-1">
+                        <label className="form-label">Đơn giá</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          min={0}
+                          value={formData.donGia}
+                          onChange={(e) =>
+                            setFormData({ ...formData, donGia: e.target.value })
+                          }
+                        />
+                      </div>
+
+                      <button
+                        className="btn btn-danger ms-1 mt-3 align-self-center"
+                        onClick={() => removeCTHoaDon(index)}
+                      >
+                        <i className="bi bi-x-circle"></i>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <button className="btn btn-secondary" onClick={addCTHoaDon}>
+                  <i className="bi bi-plus"></i> Thêm chi tiết
+                </button>
+              </div>
+            </div>
+            <div className="modal-footer d-flex justify-content-center">
+              <button className="btn btn-primary" onClick={handleAddImport}>
+                Thêm hóa đơn
+              </button>
             </div>
           </div>
         </div>

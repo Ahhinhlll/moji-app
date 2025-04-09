@@ -34,3 +34,8 @@ export const deleteImprot = async (id) => {
   const res = await request.delete(`/hoadonnhap/delete/${id}`);
   return res.data;
 };
+
+export const searchImprot = async (query) => {
+  const response = await request.get(`hoadonnhap/search?q=${query}`);
+  return response.data;
+};

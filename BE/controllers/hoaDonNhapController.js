@@ -4,7 +4,7 @@ const SanPham = require("../models/sanPhamModel");
 const NguoiDung = require("../models/nguoiDungModel");
 const NhaCungCap = require("../models/nhaCungCapModel");
 
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 
 exports.getAll = async (req, res) => {
   try {
@@ -122,8 +122,7 @@ exports.getByIdCTHDN = async (req, res) => {
 
 exports.insert = async (req, res) => {
   try {
-    const { maHDN, ngayNhap, giamGia, phuongThuc, maND, maNCC, CTHoaDonNhaps } =
-      req.body;
+    const { maHDN, giamGia, phuongThuc, maND, maNCC, CTHoaDonNhaps } = req.body;
     let hoaDonNhap;
 
     if (maHDN) {
@@ -137,14 +136,14 @@ exports.insert = async (req, res) => {
       }
     } else {
       // không có maHDN, tạo hóa đơn mới
-      if (!ngayNhap || !phuongThuc || !maND || !maNCC) {
+      if (!phuongThuc || !maND || !maNCC) {
         return res
           .status(400)
           .json({ error: "Thiếu thông tin bắt buộc để tạo hóa đơn nhập" });
       }
 
       hoaDonNhap = await HoaDonNhap.create({
-        ngayNhap,
+        ngayNhap: new Date(),
         giamGia: giamGia || 0,
         tongTien: 0,
         phuongThuc,
@@ -331,29 +330,34 @@ exports.remove = async (req, res) => {
 
 exports.search = async (req, res) => {
   try {
-    const { q } = req.query;
-    if (!q) {
-      return res.status(400).json({
-        error: "Vui lòng nhập giá trị tìm kiếm (ngày nhập hoặc mã sản phẩm).",
-      });
-    }
+    const keyword = req.query.q || "";
 
-    // q là ngày (YYYY-MM-DD)
-    if (/^\d{4}-\d{2}-\d{2}$/.test(q)) {
-      const hoaDonNhaps = await HoaDonNhap.findAll({
-        where: { ngayNhap: { [Op.eq]: new Date(q) } },
-        include: [{ model: CTHoaDonNhap, as: "CTHoaDonNhaps" }],
-      });
-
-      return res.status(200).json(hoaDonNhaps);
-    }
-
-    // Nếu q không phải ngày, giả định nó là mã sản phẩm
-    const chiTietHDNs = await CTHoaDonNhap.findAll({
-      where: { maSP: q },
+    const hoaDonNhaps = await HoaDonNhap.findAll({
+      include: [
+        {
+          model: CTHoaDonNhap,
+          as: "CTHoaDonNhaps",
+        },
+        {
+          model: NguoiDung,
+          as: "NguoiDung",
+          required: false,
+        },
+      ],
+      where: {
+        [Op.or]: [
+          Sequelize.where(Sequelize.col("NguoiDung.tenND"), {
+            [Op.like]: `%${keyword}%`,
+          }),
+          Sequelize.where(Sequelize.fn("DATE", Sequelize.col("ngayNhap")), {
+            [Op.like]: `%${keyword}%`,
+          }),
+          { tongTien: { [Op.like]: `%${keyword}%` } },
+        ],
+      },
     });
 
-    return res.status(200).json(chiTietHDNs);
+    res.status(200).json(hoaDonNhaps);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
