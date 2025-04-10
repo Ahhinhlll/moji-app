@@ -6,7 +6,8 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "../../pages/SanPham/sanPham.scss";
 import { getCtCategoryById } from "../../services/danhMucService";
 
-const ProductList = ({ rows, selectedCategory }) => {
+const ProductList = ({ rows, selectedCategory, searchResults }) => {
+  // ✅ SỬA: thêm props searchResults
   const [productList, setProductList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -20,7 +21,9 @@ const ProductList = ({ rows, selectedCategory }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        if (selectedCategory) {
+        if (searchResults && searchResults.length > 0) {
+          setProductList(searchResults);
+        } else if (selectedCategory) {
           const categoryData = await getCtCategoryById(selectedCategory);
           setProductList(categoryData?.SanPhams || []);
         } else {
@@ -33,7 +36,7 @@ const ProductList = ({ rows, selectedCategory }) => {
     };
 
     fetchProducts();
-  }, [selectedCategory]);
+  }, [selectedCategory, searchResults]);
 
   const displayedProducts = Array.isArray(productList)
     ? productList.slice(0, rows * 4)

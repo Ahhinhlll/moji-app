@@ -37,6 +37,10 @@ const HoaDonBan = sequelize.define(
       },
       allowNull: false,
     },
+    // ghiChu: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
   },
   {
     tableName: "HoaDonBan",

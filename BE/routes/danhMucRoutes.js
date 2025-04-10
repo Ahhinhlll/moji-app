@@ -8,6 +8,7 @@ const {
   search,
   getAllCTDM,
   getByIdCTDM,
+  searchCTDMOrSanPham,
 } = require("../controllers/danhMucController");
 const { verifyToken } = require("../middlewares/authMiddleware");
 const { checkRole } = require("../middlewares/authorizeRole");
@@ -278,5 +279,7 @@ router.get("/ctdanhmuc/getall", getAllCTDM);
  *         description: CTDanhMuc not found
  */
 router.get("/ctdanhmuc/getbyid/:id", getByIdCTDM);
+
+router.get("/ctdanhmuc/search", searchCTDMOrSanPham);
 
 module.exports = router;

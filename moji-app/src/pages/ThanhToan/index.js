@@ -92,21 +92,21 @@ function ThanhToan() {
               className="form-control"
               placeholder="Họ tên *"
               defaultValue={nguoiDung.tenND}
-              disabled
+              readOnly
             />
             <input
               type="text"
               className="form-control"
               placeholder="Điện thoại *"
               defaultValue={nguoiDung.sdt}
-              disabled
+              readOnly
             />
             <input
               type="email"
               className="form-control"
               placeholder="Email *"
               defaultValue={nguoiDung.email}
-              disabled
+              readOnly
             />
 
             <input
@@ -114,19 +114,9 @@ function ThanhToan() {
               className="form-control"
               placeholder="Địa chỉ chi tiết *"
               defaultValue={nguoiDung.diaChi}
-              disabled
+              readOnly
             />
 
-            {/* <input
-              type="text"
-              className="form-control"
-              placeholder="Tỉnh/Thành phố *"
-            />
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Quận/ Huyện *"
-            /> */}
             <textarea
               className="form-control"
               rows={3}

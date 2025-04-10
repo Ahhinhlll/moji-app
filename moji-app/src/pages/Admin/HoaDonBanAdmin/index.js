@@ -161,7 +161,9 @@ function HoaDonBanAdmin() {
 
   return (
     <div className="container-fluid mt-1">
-      <h3 className="mb-5 mt-2 text-center">Danh sách đơn hàng xuất</h3>
+      <h3 className="mb-5 mt-2 text-center title-text-main ">
+        Danh sách đơn hàng xuất
+      </h3>
       <div className="d-flex justify-content-end mb-2">
         <div className="quanly-center">
           <form className="search-form" onSubmit={(e) => e.preventDefault()}>

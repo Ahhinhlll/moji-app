@@ -3,9 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   getRolegetById,
   getUserById,
+  updateUser,
 } from "../../../services/nguoiDungService";
 import { jwtDecode } from "jwt-decode";
 import { updatePassword } from "./../../../services/nguoiDungService";
+import "./HoSoAdmin.scss";
+import { getAllImages } from "./../../../services/imgService";
+
 function HoSoAdmin() {
   if (!localStorage.getItem("token")) {
     window.location.replace("/dang-nhap");
@@ -113,6 +117,51 @@ function HoSoAdmin() {
     }
   };
 
+  // chọn ảnh
+  const [showImageList, setShowImageList] = useState(false);
+  const [imageList, setImageList] = useState([]);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const images = await getAllImages();
+      setImageList(images);
+    };
+    fetchImages();
+  }, []);
+
+  // update
+  const handleUpdateUser = async () => {
+    try {
+      const tenTinhObj = tinh.find((t) => t.code === Number(selectedTinh));
+      const tenTinh = tenTinhObj ? tenTinhObj.name : "";
+
+      const tenHuyenObj = huyen.find((h) => h.code === Number(selectedHuyen));
+      const tenHuyen = tenHuyenObj ? tenHuyenObj.name : "";
+
+      const diaChi = [userData.diaChi, tenHuyen, tenTinh]
+        .filter((part) => part)
+        .join(", ");
+
+      await updateUser({
+        ...userData,
+        diaChi: diaChi,
+        maTinh: selectedTinh,
+        maHuyen: selectedHuyen,
+      });
+      //window.location.reload();
+    } catch (error) {
+      alert("lỗi sửa user: ", error);
+    }
+  };
+
+  const handleInputChage = (e) => {
+    const { id, value } = e.target;
+    setUserData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
   if (!userData) {
     return <p>Đang tải dữ liệu...</p>;
   }
@@ -120,11 +169,13 @@ function HoSoAdmin() {
   return (
     <>
       {/* Profile 1 - Bootstrap Brain Component */}
-      <section className="bg-light py-1 py-md-5 py-xl-3">
+      <section className="bg-light py-1 py-md-5 py-xl-3 ho-so-ne">
         <div className="container">
           <div className="row justify-content-md-center">
             <div className="col-12 col-md-10 col-lg-8 col-xl-7 col-xxl-6">
-              <h2 className="mb-4 text-center">Hồ sơ cá nhân</h2>
+              <h2 className="mb-4 text-center title-text-main">
+                Hồ sơ cá nhân
+              </h2>
             </div>
           </div>
         </div>
@@ -140,14 +191,9 @@ function HoSoAdmin() {
                     <div className="card-body">
                       <div className="text-center mb-3">
                         <img
+                          className="img-to"
                           src={getUserImage(userData.anhThe)}
                           alt={userData.tenND}
-                          style={{
-                            width: "210px",
-                            height: "210px",
-                            borderRadius: "50%",
-                            objectFit: "cover",
-                          }}
                         />
                       </div>
                       <h5 className="text-center mb-1">{userData.tenND}</h5>
@@ -260,7 +306,11 @@ function HoSoAdmin() {
             <div className="col-12 col-lg-8 col-xl-9">
               <div className="card widget-card border-light shadow-sm">
                 <div className="card-body p-4">
-                  <ul className="nav nav-tabs" id="profileTab" role="tablist">
+                  <ul
+                    className="nav nav-tabs custom-tabs"
+                    id="profileTab"
+                    role="tablist"
+                  >
                     <li className="nav-item" role="presentation">
                       <button
                         className="nav-link active"
@@ -314,12 +364,6 @@ function HoSoAdmin() {
                       aria-labelledby="overview-tab"
                       tabIndex={0}
                     >
-                      <h5 className="mb-3">About</h5>
-                      <p className="lead mb-3">
-                        MeoMun is a seasoned and results-driven Project Manager
-                        who brings experience and expertise to project
-                        management...
-                      </p>
                       <h5 className="mb-3">Profile</h5>
                       <div className="row g-0">
                         <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
@@ -361,15 +405,6 @@ function HoSoAdmin() {
                           <div className="p-2">{userData.diaChi}</div>
                         </div>
                         <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
-                          <div className="p-2">Password</div>
-                        </div>
-                        <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
-                          <div className="p-2">
-                            {/* {"*".repeat(userData.matKhau.length)} */}
-                            {userData.matKhau}
-                          </div>
-                        </div>
-                        <div className="col-5 col-md-3 bg-light border-bottom border-white border-3">
                           <div className="p-2">Role</div>
                         </div>
                         <div className="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
@@ -388,137 +423,129 @@ function HoSoAdmin() {
                     >
                       <form action="#!" className="row gy-3 gy-xxl-4">
                         <div className="col-12">
-                          <div className="row gy-2">
-                            <label className="col-12 form-label m-0">
-                              Profile Image
-                            </label>
-                            <div className="col-12">
-                              <img
-                                src="/image/adminDefault.png"
-                                className="img-fluid"
-                                alt="admin"
-                                style={{ width: "130px", height: "130px" }}
-                              />
-                            </div>
-                            <div className="col-12 ms-4">
-                              <Link
-                                to="#!"
-                                className="d-inline-block bg-primary link-light lh-1 p-2 rounded me-2"
-                              >
-                                <i className="bi bi-upload" />
-                              </Link>
-                              <Link
-                                to="#!"
-                                className="d-inline-block bg-danger link-light lh-1 p-2 rounded"
-                              >
-                                <i className="bi bi-trash" />
-                              </Link>
+                          <div className="container-fluid">
+                            <div className="row gy-2">
+                              <div className="col-md-3 gap-2 d-flex flex-column align-items-center">
+                                <label className="form-label m-0">
+                                  Profile Image
+                                </label>
+
+                                <img
+                                  src={
+                                    userData.anhThe?.length
+                                      ? `http://localhost:3001${userData.anhThe[0]}`
+                                      : "/default-avatar.jpg" // fallback nếu không có ảnh
+                                  }
+                                  className="img-fluid img-be"
+                                  alt={userData.taiKhoan}
+                                />
+
+                                <button
+                                  className="btn btn-secondary"
+                                  onClick={(e) => {
+                                    e.preventDefault(); // tránh reload trang
+                                    setShowImageList(!showImageList);
+                                  }}
+                                >
+                                  <i className="bi bi-upload" /> Chọn ảnh
+                                </button>
+                              </div>
+
+                              {showImageList && (
+                                <div className="col-md-4">
+                                  <div className="image-list-modal">
+                                    <div className="row g-2">
+                                      {imageList.map((img, index) => (
+                                        <div
+                                          className="col-4 d-flex justify-content-center"
+                                          key={index}
+                                        >
+                                          <img
+                                            src={`http://localhost:3001${img}`}
+                                            alt="avatar"
+                                            onClick={() => {
+                                              setUserData((prev) => ({
+                                                ...prev,
+                                                anhThe: [img], // cập nhật đúng theo field backend
+                                              }));
+                                              setShowImageList(false);
+                                            }}
+                                            className={`selectable-img ${
+                                              userData?.anhThe?.[0] === img
+                                                ? "selected"
+                                                : ""
+                                            }`}
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
+
                         <div className="col-12 col-md-6">
-                          <label
-                            htmlFor="inputFirstName"
-                            className="form-label"
-                          >
+                          <label htmlFor="taiKhoan" className="form-label">
                             User Name
                           </label>
                           <input
                             type="text"
                             className="form-control"
-                            id="taikhoan"
-                            defaultValue="binhbanhbeo"
+                            id="taiKhoan"
+                            defaultValue={userData.taiKhoan}
+                            readOnly
                           />
                         </div>
+
                         <div className="col-12 col-md-6">
-                          <label htmlFor="inputSkills" className="form-label">
-                            Skills
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="inputSkills"
-                            defaultValue="HTML, SCSS, Javascript, React"
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label
-                            htmlFor="inputEducation"
-                            className="form-label"
-                          >
+                          <label htmlFor="tenND" className="form-label">
                             Full Name
                           </label>
                           <input
                             type="text"
                             className="form-control"
-                            id="inputEducation"
-                            defaultValue="Lương Thanh Bình"
+                            id="tenND"
+                            value={userData.tenND}
+                            onChange={handleInputChage}
                           />
                         </div>
                         <div className="col-12 col-md-6">
-                          <label htmlFor="inputCompany" className="form-label">
-                            Company
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="inputCompany"
-                            defaultValue="GitHub Ahhinhlll"
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label htmlFor="inputJob" className="form-label">
+                          <label htmlFor="ngaySinh" className="form-label">
                             Birthday
                           </label>
                           <input
                             type="date"
                             className="form-control"
-                            id="inputJob"
-                            defaultValue="12/01/2004"
+                            id="ngaySinh"
+                            value={userData.ngaySinh}
+                            onChange={handleInputChage}
                           />
                         </div>
                         <div className="col-12 col-md-6">
-                          <label htmlFor="inputCompany" className="form-label">
-                            Company
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="inputCompany"
-                            defaultValue="GitHub Inc"
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label htmlFor="inputPhone" className="form-label">
+                          <label htmlFor="sdt" className="form-label">
                             Phone
                           </label>
                           <input
                             type="tel"
                             className="form-control"
-                            id="inputPhone"
-                            defaultValue={+987654321}
+                            id="sdt"
+                            value={userData.sdt}
+                            onChange={handleInputChage}
                           />
                         </div>
+
                         <div className="col-12 col-md-6">
-                          <label htmlFor="inputYouTube" className="form-label">
-                            YouTube
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="inputYouTube"
-                            defaultValue="https://www.youtube.com/ltb"
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label htmlFor="inputEmail" className="form-label">
+                          <label htmlFor="email" className="form-label">
                             Email
                           </label>
                           <input
                             type="email"
                             className="form-control"
-                            id="inputEmail"
-                            defaultValue="thanhbinh121@gmail.com"
+                            id="email"
+                            value={userData.email}
+                            onChange={handleInputChage}
                           />
                         </div>
                         <div className="col-12 col-md-6">
@@ -529,7 +556,6 @@ function HoSoAdmin() {
                             className="form-select"
                             id="inputProvince"
                             value={selectedTinh}
-                            //defaultValue={selectedTinh}
                             onChange={(e) => setSelectedTinh(e.target.value)}
                           >
                             <option value="">Tỉnh/Thành phố *</option>
@@ -541,14 +567,15 @@ function HoSoAdmin() {
                           </select>
                         </div>
                         <div className="col-12 col-md-6">
-                          <label htmlFor="inputAddress" className="form-label">
+                          <label htmlFor="diaChi" className="form-label">
                             Address
                           </label>
                           <input
                             type="text"
                             className="form-control"
-                            id="inputAddress"
-                            defaultValue="Ngô Quyền, Tiên Lữ, Hưng Yên"
+                            id="diaChi"
+                            value={userData.diaChi}
+                            onChange={handleInputChage}
                           />
                         </div>
                         <div className="col-12 col-md-6">
@@ -559,7 +586,6 @@ function HoSoAdmin() {
                             className="form-select"
                             id="inputDistrict"
                             value={selectedHuyen}
-                            //defaultValue={selectedHuyen}
                             onChange={(e) => setSelectedHuyen(e.target.value)}
                             disabled={!selectedTinh}
                           >
@@ -572,65 +598,37 @@ function HoSoAdmin() {
                           </select>
                         </div>
                         <div className="col-12 col-md-6">
-                          <label htmlFor="inputAddress" className="form-label">
+                          <label htmlFor="matKhau" className="form-label">
                             Password
                           </label>
                           <input
-                            type="text"
+                            type="password"
                             className="form-control"
-                            id="inputAddress"
-                            defaultValue={"*".repeat("binhbanhbeo".length)}
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label htmlFor="inputX" className="form-label">
-                            X
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="inputX"
-                            defaultValue="https://twitter.com/ltb"
+                            id="matKhau"
+                            defaultValue={userData.matKhau}
+                            readOnly
                           />
                         </div>
 
                         <div className="col-12 col-md-6">
-                          <label htmlFor="inputX" className="form-label">
+                          <label htmlFor="maVT" className="form-label">
                             Role
                           </label>
                           <input
                             type="text"
                             className="form-control"
-                            id="inputX"
-                            defaultValue="Admin"
-                          />
-                        </div>
-                        <div className="col-12 col-md-6">
-                          <label htmlFor="inputFacebook" className="form-label">
-                            Facebook
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            id="inputFacebook"
-                            defaultValue="https://www.facebook.com/ltb"
+                            id="maVT"
+                            defaultValue={userData.maVT}
+                            readOnly
                           />
                         </div>
 
                         <div className="col-12">
-                          <label htmlFor="inputAbout" className="form-label">
-                            About
-                          </label>
-                          <textarea
-                            className="form-control"
-                            id="inputAbout"
-                            defaultValue={
-                              "MeoMun is a seasoned and results-driven Project Manager who brings experience and expertise to project management. With a proven track record of successfully delivering complex projects on time and within budget, MeoMun is the go-to professional for organizations seeking efficient and effective project leadership."
-                            }
-                          />
-                        </div>
-                        <div className="col-12">
-                          <button type="submit" className="btn btn-primary">
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={handleUpdateUser}
+                          >
                             Save Changes
                           </button>
                         </div>

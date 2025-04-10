@@ -36,3 +36,7 @@ export const searchCategory = async (query) => {
   const response = await request.get(`danhmuc/search?q=${query}`);
   return response.data;
 };
+export const searchSPtoCTDM = async (query) => {
+  const response = await request.get(`ctdanhmuc/search?q=${query}`);
+  return response.data;
+};

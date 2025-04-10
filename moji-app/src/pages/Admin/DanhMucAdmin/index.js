@@ -165,7 +165,9 @@ function DanhMucAdmin() {
 
   return (
     <div className="container-fluid mt-1">
-      <h3 className="mb-5 mt-2 text-center">Danh sách loại hàng</h3>
+      <h3 className="mb-5 mt-2 text-center title-text-main">
+        Danh sách loại hàng
+      </h3>
       <div className="d-flex justify-content-between align-items-center mb-2">
         <button className="btn-add" onClick={() => setModalOpen(true)}>
           <i className="bi bi-file-earmark-plus"></i> Thêm danh mục

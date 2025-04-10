@@ -5,7 +5,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Header.scss";
-import { getAllCategory } from "../../services/danhMucService";
+import { getAllCategory, searchSPtoCTDM } from "../../services/danhMucService";
 import CartDropdown from "../../components/Cart/CartDropdown";
 
 function Header() {
@@ -16,6 +16,9 @@ function Header() {
   const searchParams = new URLSearchParams(location.search);
   const selectedCtDm = searchParams.get("ma_CTDM");
   const [cartCount, setCartCount] = useState(0);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  //const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
     const updateCartCount = () => {
@@ -66,6 +69,26 @@ function Header() {
     navigate(`/san-pham?ma_CTDM=${categoryId}`);
   };
 
+  const handleSearchClick = async () => {
+    if (searchQuery.trim() !== "") {
+      try {
+        const res = await searchSPtoCTDM(searchQuery.trim());
+        if (res.type === "ChiTietDanhMuc") {
+          const firstCategory = res.result[0];
+          navigate(
+            `/san-pham?ma_CTDM=${firstCategory.ma_CTDM}&q=${encodeURIComponent(
+              searchQuery.trim()
+            )}`
+          );
+        } else if (res.type === "SanPham") {
+          navigate(`/san-pham?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tìm kiếm:", error);
+      }
+    }
+  };
+
   return (
     <>
       {/* Phần 1: Thanh trên cùng */}
@@ -93,8 +116,10 @@ function Header() {
                 type="search"
                 className="form-control border-pink"
                 placeholder="Tìm kiếm sản phẩm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button className="btn btn-pink">
+              <button className="btn btn-pink" onClick={handleSearchClick}>
                 <i className="bi bi-search"></i>
               </button>
             </div>

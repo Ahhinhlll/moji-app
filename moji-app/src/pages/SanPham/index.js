@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Outlet, useParams, useNavigate, useLocation } from "react-router-dom";
 import ProductList from "../../components/Product/ProductList";
 import CategoryList from "../../components/Category/CategoryList";
-import { getAllCtCategory } from "../../services/danhMucService";
+import {
+  getAllCtCategory,
+  searchSPtoCTDM,
+} from "../../services/danhMucService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./sanPham.scss";
 
@@ -12,35 +15,51 @@ function SanPham() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const ma_CTDM = searchParams.get("ma_CTDM");
+  const tuKhoa = searchParams.get("q");
 
   const [selectedCategory, setSelectedCategory] = useState({
     id: null,
     name: "Danh sách sản phẩm",
   });
 
-  useEffect(() => {
-    const fetchCategoryName = async () => {
-      if (ma_CTDM) {
-        try {
-          const categories = await getAllCtCategory(); // Lấy toàn bộ danh mục con
-          const selected = categories.find((cat) => cat.ma_CTDM === ma_CTDM);
+  const [searchResults, setSearchResults] = useState([]);
 
-          if (selected) {
-            setSelectedCategory({ id: ma_CTDM, name: selected.tenCTDM });
-          } else {
-            setSelectedCategory({ id: null, name: "Danh sách sản phẩm" });
+  useEffect(() => {
+    const fetchSearchData = async () => {
+      if (tuKhoa) {
+        try {
+          const res = await searchSPtoCTDM(tuKhoa);
+          if (res.type === "ChiTietDanhMuc") {
+            const first = res.result[0];
+            setSelectedCategory({
+              id: first.ma_CTDM,
+              name: `Tìm kiếm: "${tuKhoa}"`,
+            });
+            setSearchResults(first.SanPhams);
+          } else if (res.type === "SanPham") {
+            setSelectedCategory({ id: null, name: `Tìm kiếm: "${tuKhoa}"` });
+            setSearchResults(res.result);
           }
         } catch (error) {
-          console.error("Lỗi khi lấy danh mục con:", error);
-          setSelectedCategory({ id: null, name: "Danh sách sản phẩm" });
+          console.error("Lỗi tìm kiếm:", error);
+        }
+      } else if (ma_CTDM) {
+        try {
+          const categories = await getAllCtCategory();
+          const selected = categories.find((cat) => cat.ma_CTDM === ma_CTDM);
+          if (selected) {
+            setSelectedCategory({ id: ma_CTDM, name: selected.tenCTDM });
+          }
+        } catch (error) {
+          console.error("Lỗi khi lấy danh mục:", error);
         }
       } else {
         setSelectedCategory({ id: null, name: "Danh sách sản phẩm" });
       }
     };
 
-    fetchCategoryName();
-  }, [ma_CTDM]);
+    fetchSearchData();
+  }, [ma_CTDM, tuKhoa]);
 
   const handleSelectedCategory = (categoryId, categoryName) => {
     setSelectedCategory({ id: categoryId, name: categoryName });
@@ -73,7 +92,13 @@ function SanPham() {
                 <option value={2}>Giá giảm dần</option>
               </select>
             </div>
-            <ProductList rows={6} selectedCategory={selectedCategory.id} />
+
+            <ProductList
+              rows={6}
+              selectedCategory={selectedCategory.id}
+              searchKeyword={tuKhoa}
+              searchResults={searchResults}
+            />
           </div>
         </div>
       )}

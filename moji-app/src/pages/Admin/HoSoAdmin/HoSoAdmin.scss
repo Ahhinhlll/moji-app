@@ -1,0 +1,83 @@
+.ho-so-ne {
+  .text-bg-primary {
+    background: #ed6e94 !important;
+  }
+
+  .btn-outline-primary {
+    border: 2px solid #ed6e94;
+    color: #ed6e94;
+
+    &:hover {
+      background: #ed6e94;
+      border: 2px solid #ed6e94;
+      color: #fff;
+    }
+  }
+
+  .img-to,
+  .img-be {
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .img-to {
+    width: 210px;
+    height: 210px;
+  }
+
+  .img-be {
+    width: 130px;
+    height: 130px;
+    border: 2px solid #ccc;
+  }
+
+  .custom-tabs .nav-link {
+    color: #ed6e94;
+  }
+
+  .custom-tabs .nav-link.active {
+    color: #000 !important;
+  }
+
+  // Modal chọn ảnh đại diện
+  .image-list-modal {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .selectable-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border 0.2s, transform 0.2s;
+
+    &:hover {
+      border-color: #aaa;
+      transform: scale(1.05);
+    }
+
+    &.selected {
+      border-color: #ed6e94;
+    }
+  }
+
+  .btn-group-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+.title-text-main {
+  color: #ed6e94;
+}

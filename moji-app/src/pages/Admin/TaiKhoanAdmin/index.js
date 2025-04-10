@@ -87,7 +87,9 @@ function TaiKhoanAdmin() {
   return (
     <>
       <div className="container-fluid">
-        <h3 className="mb-5 mt-2 text-center">Danh sách tài khoản</h3>
+        <h3 className="mb-5 mt-2 text-center title-text-main ">
+          Danh sách tài khoản
+        </h3>
         <div className="d-flex justify-content-between align-items-center mb-2">
           <div className="select-wrapper position-relative">
             <select
@@ -96,6 +98,7 @@ function TaiKhoanAdmin() {
               value={vaiTroFilter}
               onChange={(e) => {
                 setVaiTroFilter(e.target.value);
+                setSelectedUser(null);
                 setCurrentPage(1);
               }}
             >

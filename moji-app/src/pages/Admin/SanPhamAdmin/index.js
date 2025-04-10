@@ -14,6 +14,7 @@ import {
   getAllCtCategory,
   getCtCategoryById,
 } from "../../../services/danhMucService";
+import { getAllImages } from "../../../services/imgService";
 
 function SanPhamAdmin() {
   if (!localStorage.getItem("token")) {
@@ -50,6 +51,18 @@ function SanPhamAdmin() {
       anhSP: [],
     });
   };
+
+  // chọn ảnh
+  const [showImageList, setShowImageList] = useState(false);
+  const [imageList, setImageList] = useState([]);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const images = await getAllImages();
+      setImageList(images);
+    };
+    fetchImages();
+  }, []);
 
   // mở modal update
   const handleEditClick = (product) => {
@@ -185,7 +198,9 @@ function SanPhamAdmin() {
 
   return (
     <div className="container-fluid mt-1">
-      <h3 className="mb-5 mt-2 text-center">Danh sách sản phẩm</h3>
+      <h3 className="mb-5 mt-2 text-center title-text-main ">
+        Danh sách sản phẩm
+      </h3>
       <div className="d-flex justify-content-between align-items-center mb-2">
         <button
           className="btn-add"
@@ -337,114 +352,173 @@ function SanPhamAdmin() {
         <div className="sanpham-admin-modal">
           <div className="modal-overlay">
             <div className="modal-content">
-              <span className="close-btn" onClick={() => setModalOpen(false)}>
+              <span
+                className="close-btn"
+                onClick={() => {
+                  setModalOpen(false);
+                  setShowImageList(false);
+                }}
+              >
                 <i className="bi bi-x-circle"></i>
               </span>
-              <h3 className="mt-5 mb-4">
-                {selectedProduct ? "Cập nhật thông tin" : "Thêm mới thông tin"}
-                {/* Thêm mới thông tin */}
-              </h3>
+              <h4 className="my-3 text-center">
+                {selectedProduct ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
+              </h4>
+              <div className="modal-body">
+                {/* Bên trái: ảnh */}
+                <div className="left-image-preview">
+                  <label className="form-label">Ảnh sản phẩm</label>
 
-              <div className="form-group">
-                <input
-                  type="text"
-                  id="tenSP"
-                  className="form-control"
-                  placeholder="Tên sản phẩm"
-                  onChange={handleInputChange}
-                  value={formData.tenSP}
-                />
-              </div>
+                  <div className="selected-images">
+                    {formData.anhSP?.length > 0 ? (
+                      formData.anhSP.map((img, index) => (
+                        <img
+                          key={index}
+                          src={`http://localhost:3001${img}`}
+                          alt={`Ảnh ${index + 1}`}
+                        />
+                      ))
+                    ) : (
+                      <img src="/image/default.jpg" alt="Mặc định" />
+                    )}
+                  </div>
 
-              <div className="form-group">
-                <select
-                  id="ma_CTDM"
-                  className="form-control"
-                  value={formData.ma_CTDM}
-                  onChange={handleInputChange}
-                >
-                  <option value={0}>Chọn danh mục</option>
-                  {categories.map((cat) => (
-                    <option key={cat.ma_CTDM} value={cat.ma_CTDM}>
-                      {cat.tenCTDM}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <input
-                  type="text"
-                  id="code"
-                  className="form-control"
-                  placeholder="Code sản phẩm"
-                  value={formData.code}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="form-group">
-                <input
-                  type="text"
-                  id="mauSP"
-                  className="form-control"
-                  placeholder="Màu sắc"
-                  value={formData.mauSP}
-                  onChange={handleInputChange}
-                />
-              </div>
+                  <button
+                    className="btn btn-secondary btn-chonAnh mt-2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowImageList(!showImageList);
+                    }}
+                  >
+                    <i className="bi bi-upload" /> Chọn ảnh
+                  </button>
 
-              <div className="form-group">
-                <input
-                  type="text"
-                  id="anhSP"
-                  className="form-control"
-                  placeholder="Ảnh sản phẩm"
-                  value={formData.anhSP}
-                  onChange={handleInputChange}
-                />
-              </div>
+                  {showImageList && (
+                    <div className="image-list-modal-popup">
+                      <div className="row g-2">
+                        {imageList.map((img, index) => (
+                          <div
+                            className="col-6 d-flex justify-content-center"
+                            key={index}
+                          >
+                            <img
+                              src={`http://localhost:3001${img}`}
+                              alt="ảnh sản phẩm"
+                              onClick={() => {
+                                setFormData((prev) => {
+                                  const currentImages = prev.anhSP || [];
+                                  const isSelected =
+                                    currentImages.includes(img);
+                                  const newImages = isSelected
+                                    ? currentImages.filter((i) => i !== img) // bỏ nếu đã chọn
+                                    : [...currentImages, img]; // thêm nếu chưa
 
-              <div className="form-group">
-                <input
-                  type="text"
-                  id="moTa"
-                  className="form-control"
-                  placeholder="Mô tả"
-                  value={formData.moTa}
-                  onChange={handleInputChange}
-                />
-              </div>
+                                  return {
+                                    ...prev,
+                                    anhSP: newImages,
+                                  };
+                                });
+                              }}
+                              className={`selectable-img ${
+                                formData.anhSP?.includes(img) ? "selected" : ""
+                              }`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-              <div className="form-group">
-                <input
-                  type="number"
-                  id="soLuong"
-                  className="form-control"
-                  placeholder="Số lượng"
-                  value={formData.soLuong}
-                  readOnly
-                  onChange={handleInputChange}
-                />
-              </div>
+                {/* Bên phải: thông tin */}
+                <div className="right-form">
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      id="tenSP"
+                      placeholder="Tên sản phẩm"
+                      value={formData.tenSP}
+                      onChange={handleInputChange}
+                    />
+                  </div>
 
-              <div className="form-group">
-                <input
-                  type="number"
-                  id="giaTien"
-                  className="form-control"
-                  placeholder="Giá thành"
-                  value={formData.giaTien}
-                  onChange={handleInputChange}
-                />
-              </div>
+                  <div className="form-group">
+                    <select
+                      id="ma_CTDM"
+                      value={formData.ma_CTDM}
+                      onChange={handleInputChange}
+                    >
+                      <option value={0}>Chọn danh mục</option>
+                      {categories.map((cat) => (
+                        <option key={cat.ma_CTDM} value={cat.ma_CTDM}>
+                          {cat.tenCTDM}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              <button
-                className="btn-save"
-                onClick={selectedProduct ? handleUpdate : handleSubmit}
-                //onClick={handleSubmit}
-              >
-                <i className="bi bi-save"></i>{" "}
-                {selectedProduct ? "Cập nhật" : "Thêm"}
-              </button>
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      id="code"
+                      placeholder="Code sản phẩm"
+                      value={formData.code}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      id="mauSP"
+                      placeholder="Màu sắc"
+                      value={formData.mauSP}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      id="moTa"
+                      placeholder="Mô tả"
+                      value={formData.moTa}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <input
+                      type="number"
+                      id="soLuong"
+                      placeholder="Số lượng"
+                      value={formData.soLuong}
+                      readOnly
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <input
+                      type="number"
+                      id="giaTien"
+                      placeholder="Giá thành"
+                      value={formData.giaTien}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="mt-3 d-flex justify-content-end">
+                    <button
+                      className="btn-save"
+                      onClick={selectedProduct ? handleUpdate : handleSubmit}
+                    >
+                      <i className="bi bi-save" />{" "}
+                      {selectedProduct ? "Cập nhật" : "Thêm"}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

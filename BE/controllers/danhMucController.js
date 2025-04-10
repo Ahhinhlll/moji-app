@@ -239,3 +239,62 @@ exports.search = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+exports.searchCTDMOrSanPham = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    // 1. Tìm chi tiết danh mục có tên giống từ khóa
+    const chiTietDMs = await CTDanhMuc.findAll({
+      where: { tenCTDM: { [Op.like]: `%${q}%` } },
+      include: [
+        {
+          model: SanPham,
+          as: "SanPhams",
+        },
+      ],
+    });
+
+    if (chiTietDMs.length > 0) {
+      const result = chiTietDMs.map((ctdm) => ({
+        ma_CTDM: ctdm.ma_CTDM,
+        tenCTDM: ctdm.tenCTDM,
+        SanPhams: ctdm.SanPhams,
+      }));
+
+      return res.status(200).json({ type: "ChiTietDanhMuc", result });
+    }
+
+    // 2. Nếu không có chi tiết, thử tìm sản phẩm
+    const sanPhams = await SanPham.findAll({
+      where: { tenSP: { [Op.like]: `%${q}%` } },
+      include: [
+        {
+          model: CTDanhMuc,
+          as: "CTDanhMuc",
+          attributes: ["ma_CTDM", "tenCTDM"],
+        },
+      ],
+    });
+
+    if (sanPhams.length > 0) {
+      const result = sanPhams.map((sp) => ({
+        maSP: sp.maSP,
+        tenSP: sp.tenSP,
+        giaTien: sp.giaTien,
+        moTa: sp.moTa,
+        anhSP: sp.anhSP,
+        mauSP: sp.mauSP,
+        code: sp.code,
+
+        CTDanhMuc: sp.CTDanhMuc,
+      }));
+
+      return res.status(200).json({ type: "SanPham", result });
+    }
+
+    return res.status(404).json({ message: "Không tìm thấy kết quả phù hợp" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};

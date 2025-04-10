@@ -133,7 +133,9 @@ function NhaCungCapAdmin() {
 
   return (
     <div className="container-fluid mt-1">
-      <h3 className="mb-5 mt-2 text-center">Danh sách nhà cung cấp</h3>
+      <h3 className="mb-5 mt-2 text-center title-text-main ">
+        Danh sách nhà cung cấp
+      </h3>
       <div className="d-flex justify-content-between align-items-center mb-2">
         <button
           className="btn-add"

@@ -26,8 +26,7 @@ exports.getById = async (req, res) => {
 
 exports.insert = async (req, res) => {
   try {
-    const { tenND, diaChi, ngaySinh, sdt, email, taiKhoan, matKhau, anhThe } =
-      req.body;
+    const { tenND, diaChi, ngaySinh, sdt, email, taiKhoan, matKhau } = req.body;
     const nguoiDung = await NguoiDung.create({
       tenND,
       diaChi,
@@ -36,7 +35,7 @@ exports.insert = async (req, res) => {
       email,
       taiKhoan,
       matKhau,
-      anhThe,
+      anhThe: "/uploads/1743347689972.png",
       maVT: "U11",
     });
     res.status(201).json(nguoiDung);
