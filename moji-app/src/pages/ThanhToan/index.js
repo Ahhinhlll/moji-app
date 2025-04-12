@@ -13,6 +13,7 @@ function ThanhToan() {
   const [voucher, setVoucher] = useState("");
   const [giamTien, setGiamTien] = useState(0);
   const [dieuKhoan, setDieuKhoan] = useState(false);
+  //const [ghiChu, setGhiChu] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -60,6 +61,7 @@ function ThanhToan() {
         giamGia: giamTien,
         phuongThuc: phuongThuc,
         maND: nguoiDung.maND,
+        //ghiChu: ghiChu,
         CTHoaDonBans: detailProduct
           ? [{ maSP: cartItems[0].maSP, soLuong: cartItems[0].quantity }]
           : cartItems.map((item) => ({
@@ -120,8 +122,11 @@ function ThanhToan() {
             <textarea
               className="form-control"
               rows={3}
+              id="ghiChu"
               placeholder="Ghi chú"
               defaultValue={""}
+              //value={ghiChu}
+              //onChange={(e) => setGhiChu(e.target.value)}
             />
           </form>
           <p className="note">

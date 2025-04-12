@@ -110,7 +110,7 @@ exports.getByIdCTHDB = async (req, res) => {
 
 exports.insert = async (req, res) => {
   try {
-    const { maHDB, giamGia, phuongThuc, maND, CTHoaDonBans } = req.body;
+    const { maHDB, giamGia, phuongThuc, maND, ghiChu, CTHoaDonBans } = req.body;
     let hoaDonBan;
     if (maHDB) {
       hoaDonBan = await HoaDonBan.findByPk(maHDB, {
@@ -135,6 +135,7 @@ exports.insert = async (req, res) => {
         tongTien: 0,
         phuongThuc,
         maND,
+        ghiChu,
       });
     }
 

@@ -191,6 +191,7 @@ function HoaDonBanAdmin() {
             <th>Địa chỉ</th>
             <th>Email</th>
             <th>Tổng tiền</th>
+            {/* <th>Ghi chú</th> */}
             <th>Trạng thái</th>
             <th colSpan={2}>Thao tác</th>
           </tr>
@@ -205,6 +206,8 @@ function HoaDonBanAdmin() {
               <td>{users[bill.maND]?.diaChi}</td>
               <td>{users[bill.maND]?.email}</td>
               <td>{bill.tongTien}đ</td>
+              {/* <td>{bill.ghiChu}</td> */}
+
               <td>
                 <select
                   className="form-select"

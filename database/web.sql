@@ -7,5 +7,7 @@ values('A00', 'admin', now(), now()),
         
         select * from vaitro;
         select * from nguoidung;
+        select * from hoadonban;
+        
 
 
