@@ -172,7 +172,10 @@ function Header() {
           <div className="user-actions">
             {user ? (
               <>
-                <span className="fw-semibold">{user}</span> |{" "}
+                <Link to="/ho-so" className="text-decoration-none">
+                  <span className="fw-semibold p-1">{user} </span>
+                </Link>
+                |{" "}
                 <button
                   className="btn btn-link p-0 fw-semibold text-black"
                   onClick={handleLogout}

@@ -47,26 +47,16 @@ function HeaderAdmin({ toggleSidebar }) {
         <img className="logo" src="/image/logo.png" alt="Logo" />
       </div>
 
-      {/* <div className="header-center">
-        <form className="search-form">
-          <input
-            type="search"
-            className="search-input"
-            placeholder="Tìm kiếm thông tin ...."
-          />
-          <span className="search-icon">
-            <i className="bi bi-search"></i>
-          </span>
-        </form>
-      </div> */}
 
       <div className="header-center">
         <div className="contact-info">
           <Link to="#!" className="contact-item">
-            <i className="fa fa-envelope" /> MojiAppNe@gmail.com
+            <i className="bi bi-envelope-at-fill" />
+            MojiAppNe@gmail.com
           </Link>
           <Link to="#!" className="contact-item">
-            <i className="fa fa-phone" /> 0387 238 815
+            <i className="bi bi-telephone-inbound-fill" />
+            0387 238 815
           </Link>
         </div>
       </div>

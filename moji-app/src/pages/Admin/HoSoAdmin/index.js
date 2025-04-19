@@ -618,7 +618,7 @@ function HoSoAdmin() {
                             type="text"
                             className="form-control"
                             id="maVT"
-                            defaultValue={userData.maVT}
+                            defaultValue={tenVT}
                             readOnly
                           />
                         </div>

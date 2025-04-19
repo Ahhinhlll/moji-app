@@ -17,6 +17,11 @@ import HoaDonBanAdmin from "../pages/Admin/HoaDonBanAdmin";
 import HoSoAdmin from "./../pages/Admin/HoSoAdmin/index";
 import HoaDonNhapAdmin from "../pages/Admin/HoaDonNhapAdmin";
 import TaiKhoanAdmin from "../pages/Admin/TaiKhoanAdmin";
+import HoSo from "../pages/HoSo";
+import ThongTin from "./../pages/HoSo/thongTin";
+import DoiPass from "./../pages/HoSo/doiPass";
+import YeuThich from "./../pages/HoSo/yeuThich";
+import DonHang from "./../pages/HoSo/donHang";
 
 export const routes = [
   // user
@@ -53,6 +58,17 @@ export const routes = [
       {
         path: "thanh-toan",
         element: <ThanhToan />,
+      },
+      {
+        path: "ho-so",
+        element: <HoSo />,
+        children: [
+          { index: true, element: <Navigate to="thong-tin" /> },
+          { path: "thong-tin", element: <ThongTin /> },
+          { path: "doi-mat-khau", element: <DoiPass /> },
+          { path: "sp-yeu-thich", element: <YeuThich /> },
+          { path: "ls-don-hang", element: <DonHang /> },
+        ],
       },
     ],
   },
