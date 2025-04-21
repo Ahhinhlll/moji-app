@@ -8,6 +8,9 @@ const {
   search,
   updatePassword,
 } = require("../controllers/nguoiDungController");
+const { verifyToken } = require("../middlewares/authMiddleware");
+const { checkRole } = require("../middlewares/authorizeRole");
+
 const router = express.Router();
 
 /**
@@ -97,7 +100,7 @@ router.get("/nguoidung/getbyid/:id", getById);
  *             schema:
  *               $ref: '#/components/schemas/NguoiDung'
  */
-router.post("/nguoidung/insert", insert);
+router.post("/nguoidung/insert", verifyToken, insert);
 
 /**
  * @swagger
@@ -141,7 +144,7 @@ router.post("/nguoidung/insert", insert);
  *       404:
  *         description: NguoiDung item not found
  */
-router.put("/nguoidung/update", update);
+router.put("/nguoidung/update", verifyToken, update);
 
 /**
  * @swagger
@@ -165,7 +168,7 @@ router.put("/nguoidung/update", update);
  *       404:
  *         description: NguoiDung item not found
  */
-router.delete("/nguoidung/delete/:id", remove);
+router.delete("/nguoidung/delete/:id", verifyToken, checkRole(["A00"]), remove);
 
 /**
  * @swagger

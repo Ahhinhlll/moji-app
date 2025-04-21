@@ -115,3 +115,15 @@ exports.search = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+// thống kê sản phẩm có số lượng tồn < 5
+exports.thongKeSoLuongSPNhoHon5 = async (req, res) => {
+  try {
+    const AllSoLuong = await SanPham.count({
+      where: { soLuong: { [Op.lt]: 5 } },
+    });
+    res.status(200).json({ AllSoLuong });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

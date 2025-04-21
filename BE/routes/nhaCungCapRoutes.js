@@ -7,6 +7,9 @@ const {
   remove,
   search,
 } = require("../controllers/nhaCungCapController");
+const { verifyToken } = require("../middlewares/authMiddleware");
+const { checkRole } = require("../middlewares/authorizeRole");
+
 const router = express.Router();
 
 /**
@@ -84,7 +87,7 @@ router.get("/nhacungcap/getbyid/:id", getById);
  *             schema:
  *               $ref: '#/components/schemas/NhaCungCap'
  */
-router.post("/nhacungcap/insert", insert);
+router.post("/nhacungcap/insert", verifyToken, checkRole(["A00"]), insert);
 
 /**
  * @swagger
@@ -118,7 +121,7 @@ router.post("/nhacungcap/insert", insert);
  *       404:
  *         description: NhaCungCap item not found
  */
-router.put("/nhacungcap/update", update);
+router.put("/nhacungcap/update", verifyToken, checkRole(["A00"]), update);
 
 /**
  * @swagger
@@ -142,7 +145,12 @@ router.put("/nhacungcap/update", update);
  *       404:
  *         description: NhaCungCap item not found
  */
-router.delete("/nhacungcap/delete/:id", remove);
+router.delete(
+  "/nhacungcap/delete/:id",
+  verifyToken,
+  checkRole(["A00"]),
+  remove
+);
 
 /**
  * @swagger

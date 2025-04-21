@@ -78,10 +78,8 @@ function HoSo() {
           </div>
         </div>
 
-        {/* Content */}
         <div className="col-12 col-md-7">
           <Outlet />
-          {/* <DoiPass /> */}
         </div>
       </div>
     </div>

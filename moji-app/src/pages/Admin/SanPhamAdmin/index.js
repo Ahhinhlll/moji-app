@@ -52,6 +52,21 @@ function SanPhamAdmin() {
     });
   };
 
+  const validateForm = (formData) => {
+    if (
+      !formData.tenSP ||
+      !formData.code ||
+      !formData.mauSP ||
+      !formData.moTa ||
+      !formData.ma_CTDM ||
+      !formData.giaTien ||
+      formData.giaTien <= 0
+    ) {
+      return false;
+    }
+    return true;
+  };
+
   // chọn ảnh
   const [showImageList, setShowImageList] = useState(false);
   const [imageList, setImageList] = useState([]);
@@ -119,6 +134,13 @@ function SanPhamAdmin() {
   };
 
   const handleSubmit = async () => {
+    if (!validateForm(formData)) {
+      alert(
+        "Vui lòng điền đầy đủ thông tin sản phẩm và giá tiền phải lớn hơn 0."
+      );
+      return;
+    }
+
     try {
       const data = await createProduct(formData);
       setProducts((prevProducts) => [...prevProducts, data]);
@@ -130,6 +152,13 @@ function SanPhamAdmin() {
 
   const handleUpdate = async () => {
     if (!selectedProduct) return;
+    if (!validateForm(formData)) {
+      alert(
+        "Vui lòng điền đầy đủ thông tin sản phẩm và giá tiền phải lớn hơn 0."
+      );
+      return;
+    }
+
     try {
       const updatedData = { ...formData, maSP: selectedProduct.maSP };
 

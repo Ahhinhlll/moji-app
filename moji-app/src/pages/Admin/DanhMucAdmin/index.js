@@ -60,6 +60,19 @@ function DanhMucAdmin() {
   };
 
   const handleSaveCategory = async () => {
+    if (newCateName.trim() === "") {
+      alert("Tên danh mục không được để trống.");
+      return;
+    }
+
+    // const filteredCTDanhMucs = newCTDanhMucs.filter(
+    //   (ct) => ct.tenCTDM.trim() !== ""
+    // );
+    // if (filteredCTDanhMucs.length === 0) {
+    //   alert("Vui lòng thêm ít nhất một chi tiết danh mục.");
+    //   return;
+    // }
+
     const body = {
       tenDM: newCateName,
       CTDanhMucs: newCTDanhMucs.filter((ct) => ct.tenCTDM.trim() !== ""),

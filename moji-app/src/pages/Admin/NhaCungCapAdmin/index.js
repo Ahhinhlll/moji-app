@@ -30,6 +30,18 @@ function NhaCungCapAdmin() {
     email: "",
   });
 
+  const validateFormRong = (formData) => {
+    if (
+      !formData.tenNCC ||
+      !formData.diaChi ||
+      !formData.sdt ||
+      !formData.email
+    ) {
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
@@ -66,8 +78,31 @@ function NhaCungCapAdmin() {
     const { id, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [id]: value }));
   };
+  // Hàm kiểm tra email
+  function isValidEmail(email) {
+    return /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
+  }
+
+  // Hàm kiểm tra số điện thoại
+  function isValidPhone(sdt) {
+    return /^0\d{9}$/.test(sdt);
+  }
 
   const handleSubmit = async () => {
+    if (!validateFormRong(formData)) {
+      alert("Vui lòng điền đầy đủ thông tin!");
+      return;
+    }
+
+    if (!isValidEmail(formData.email)) {
+      alert("Email không hợp lệ. Email có định dạng 'abc@gmail.com'.");
+      return;
+    }
+
+    if (!isValidPhone(formData.sdt)) {
+      alert("Số điện thoại không hợp lệ. Phải bắt đầu từ số 0 và có 10 số.");
+      return;
+    }
     try {
       const data = await createSupplier(formData);
       setSuppliers((prev) => [...prev, data]);
@@ -79,6 +114,19 @@ function NhaCungCapAdmin() {
 
   const handleUpdate = async () => {
     if (!selectedSupplier) return;
+    if (!validateFormRong(formData)) {
+      alert("Vui lòng điền đầy đủ thông tin!");
+      return;
+    }
+    if (!isValidEmail(formData.email)) {
+      alert("Email không hợp lệ. Email có định dạng 'abc@gmail.com'.");
+      return;
+    }
+
+    if (!isValidPhone(formData.sdt)) {
+      alert("Số điện thoại không hợp lệ. Phải bắt đầu từ số 0 và có 10 số.");
+      return;
+    }
     try {
       await updateSupplier({ ...formData, maNCC: selectedSupplier.maNCC });
       setSuppliers((prev) =>

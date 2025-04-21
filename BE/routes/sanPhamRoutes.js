@@ -6,7 +6,11 @@ const {
   update,
   remove,
   search,
+  thongKeSoLuongSPNhoHon5,
 } = require("../controllers/sanPhamController");
+const { verifyToken } = require("../middlewares/authMiddleware");
+const { checkRole } = require("../middlewares/authorizeRole");
+
 const router = express.Router();
 
 /**
@@ -92,7 +96,7 @@ router.get("/sanpham/getbyid/:id", getById);
  *             schema:
  *               $ref: '#/components/schemas/SanPham'
  */
-router.post("/sanpham/insert", insert);
+router.post("/sanpham/insert", verifyToken, checkRole(["A00"]), insert);
 
 /**
  * @swagger
@@ -134,7 +138,7 @@ router.post("/sanpham/insert", insert);
  *       404:
  *         description: SanPham item not found
  */
-router.put("/sanpham/update", update);
+router.put("/sanpham/update", verifyToken, checkRole(["A00"]), update);
 
 /**
  * @swagger
@@ -158,7 +162,7 @@ router.put("/sanpham/update", update);
  *       404:
  *         description: SanPham item not found
  */
-router.delete("/sanpham/delete/:id", remove);
+router.delete("/sanpham/delete/:id", verifyToken, checkRole(["A00"]), remove);
 
 /**
  * @swagger
@@ -183,5 +187,11 @@ router.delete("/sanpham/delete/:id", remove);
  *                 $ref: '#/components/schemas/SanPham'
  */
 router.get("/sanpham/search", search);
+router.get(
+  "/sanpham/sosanphamnhohon5",
+  verifyToken,
+  checkRole(["A00"]),
+  thongKeSoLuongSPNhoHon5
+);
 
 module.exports = router;

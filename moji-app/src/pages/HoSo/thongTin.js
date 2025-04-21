@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { getUserById } from "../../services/nguoiDungService";
+import { getUserById, updateUser } from "../../services/nguoiDungService";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 function ThongTin() {
   const [tinh, setTinh] = useState([]);
@@ -49,10 +50,69 @@ function ThongTin() {
 
     fetchUserData();
   }, [token]);
+  // update
+  const Navigate = useNavigate();
+  // Hàm kiểm tra email
+  function isValidEmail(email) {
+    return /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
+  }
+
+  // Hàm kiểm tra số điện thoại
+  function isValidPhone(sdt) {
+    return /^0\d{9}$/.test(sdt);
+  }
+  const handleUpdateUser = async () => {
+    if (
+      !userData.tenND ||
+      !userData.ngaySinh ||
+      !userData.sdt ||
+      !userData.email ||
+      !userData.diaChi ||
+      !selectedTinh ||
+      !selectedHuyen
+    ) {
+      alert("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+    if (!isValidEmail(userData.email)) {
+      alert("Email không hợp lệ. Email có định dạng 'abc@gmail.com'.");
+      return;
+    }
+
+    if (!isValidPhone(userData.sdt)) {
+      alert("Số điện thoại không hợp lệ. Phải bắt đầu từ số 0 và có 10 số.");
+      return;
+    }
+    try {
+      const tenTinhObj = tinh.find((t) => t.code === Number(selectedTinh));
+      const tenTinh = tenTinhObj ? tenTinhObj.name : "";
+
+      const tenHuyenObj = huyen.find((h) => h.code === Number(selectedHuyen));
+      const tenHuyen = tenHuyenObj ? tenHuyenObj.name : "";
+
+      const diaChi = [userData.diaChi, tenHuyen, tenTinh]
+        .filter((part) => part)
+        .join(", ");
+
+      await updateUser({
+        ...userData,
+        diaChi: diaChi,
+        maTinh: selectedTinh,
+        maHuyen: selectedHuyen,
+      });
+      Navigate("/ho-so");
+      alert("Cập nhật thành công!");
+    } catch (error) {
+      alert("Lỗi cập nhật user: ", error);
+    }
+  };
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    userData((prevData) => ({ ...prevData, [id]: value }));
+    setUserData((prevData) => ({ ...prevData, [id]: value }));
   };
+  if (!userData) {
+    return <p>Loading...</p>;
+  }
   return (
     <div className="content">
       <h5 className="fw-bold">HỒ SƠ CỦA TÔI</h5>
@@ -74,7 +134,7 @@ function ThongTin() {
               class="form-control"
               id="tenND"
               type="text"
-              value={userData?.tenND}
+              value={userData.tenND}
               onChange={handleInputChange}
             />
           </div>
@@ -93,7 +153,7 @@ function ThongTin() {
               id="ngaySinh"
               placeholder="dd/mm/yyyy"
               type="date"
-              value={userData?.ngaySinh}
+              value={userData.ngaySinh}
               onChange={handleInputChange}
             />
           </div>
@@ -109,10 +169,10 @@ function ThongTin() {
           <div class="col-sm-7 col-12">
             <input
               class="form-control"
-              id="phone"
+              id="sdt"
               placeholder="Điện thoại"
-              type="sdt"
-              value={userData?.sdt}
+              type="text"
+              value={userData.sdt}
               onChange={handleInputChange}
             />
           </div>
@@ -130,7 +190,7 @@ function ThongTin() {
               class="form-control"
               id="email"
               type="email"
-              value={userData?.email}
+              value={userData.email}
               onChange={handleInputChange}
             />
           </div>
@@ -197,14 +257,18 @@ function ThongTin() {
               id="diaChi"
               placeholder="Địa chỉ chi tiết"
               type="text"
-              value={userData?.diaChi}
+              value={userData.diaChi}
               onChange={handleInputChange}
             />
           </div>
         </div>
         <div class="row justify-content-center">
           <div class="col-sm-7 col-12 d-flex justify-content-start ps-sm-0 ps-3">
-            <button class="btn btn-update" disabled="" type="submit">
+            <button
+              class="btn btn-update"
+              type="button"
+              onClick={handleUpdateUser}
+            >
               Cập nhật
             </button>
           </div>

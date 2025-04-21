@@ -8,6 +8,9 @@ import {
 import "./TaiKhoanAdmin.scss";
 
 function TaiKhoanAdmin() {
+  if (!localStorage.getItem("token")) {
+    window.location.replace("/dang-nhap");
+  }
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);

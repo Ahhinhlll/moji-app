@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -11,29 +11,53 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import {
+  getAllThongKeDoanhThu7Ngay,
+  getAllThongKeTop5DanhMucBanChay,
+} from "../../../services/thongKeService";
 
-function thongKeChart() {
+function ThongKeChart() {
   // Màu sắc cho biểu đồ tròn
-  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042"];
+  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#00C49F"];
 
   // Dữ liệu cho biểu đồ cột
-  const dataBar = [
-    { name: "01/04", DoanhThu: 50 },
-    { name: "02/04", DoanhThu: 80 },
-    { name: "03/04", DoanhThu: 40 },
-    { name: "04/04", DoanhThu: 95 },
-    { name: "05/04", DoanhThu: 60 },
-    { name: "06/04", DoanhThu: 75 },
-    { name: "07/04", DoanhThu: 55 },
-  ];
+  const [dataCot, setDataCot] = useState([]);
+  const [dataTron, setDataTron] = useState([]);
 
-  // Dữ liệu cho biểu đồ tròn
-  const dataPie = [
-    { name: "Danh mục A", value: 50 },
-    { name: "Danh mục B", value: 30 },
-    { name: "Danh mục C", value: 70 },
-    { name: "Danh mục D", value: 40 },
-  ];
+  useEffect(() => {
+    const fetchDataCot = async () => {
+      try {
+        const data = await getAllThongKeDoanhThu7Ngay();
+        if (data && data.AllDoanhThuNgay) {
+          const formattedData = data.AllDoanhThuNgay.map((item) => ({
+            ngayBan: item.ngayBan,
+            doanhThu: item.doanhThu,
+          }));
+          setDataCot(formattedData);
+        }
+      } catch (error) {
+        console.error("Lỗi gọi biểu đô cột:", error);
+      }
+    };
+    const fetchDataTron = async () => {
+      try {
+        const data = await getAllThongKeTop5DanhMucBanChay();
+        if (data && data.AllTop5DanhMucBanChay) {
+          const formattedData = data.AllTop5DanhMucBanChay.map((item) => ({
+            ma_CTDM: item.ma_CTDM,
+            tenCTDM: item.tenCTDM,
+            soLuong: Number(item.soLuong),
+          }));
+          setDataTron(formattedData);
+        }
+      } catch (error) {
+        console.error("Lỗi gọi biểu đồ tròn:", error);
+      }
+    };
+
+    fetchDataCot();
+    fetchDataTron();
+  }, []);
 
   return (
     <div className="row my-4">
@@ -46,12 +70,14 @@ function thongKeChart() {
                 <h5 className="card-title mb-4">
                   Tổng doanh thu bán hàng trong 7 ngày
                 </h5>
-                <BarChart width={470} height={300} data={dataBar}>
+                <BarChart width={470} height={300} data={dataCot}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="ngayBan" />
                   <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="DoanhThu" fill="#8884d8" />
+                  <Tooltip
+                    formatter={(value) => value.toLocaleString() + "đ"}
+                  />
+                  <Bar dataKey="doanhThu" fill="#8884d8" />
                 </BarChart>
               </div>
             </div>
@@ -66,22 +92,31 @@ function thongKeChart() {
                 </h5>
                 <PieChart width={500} height={300}>
                   <Pie
-                    data={dataPie}
+                    data={dataTron}
                     cx="40%"
                     cy="50%"
-                    innerRadius={50} // rỗng giữa
+                    innerRadius={50}
                     outerRadius={100}
-                    //label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
-                    dataKey="value"
+                    // label={({ name, percent }) =>
+                    //   `${name} ${(percent * 100).toFixed(0)}%`
+                    // } // tên + %
+                    nameKey="tenCTDM"
+                    dataKey="soLuong"
                   >
-                    {dataPie.map((entry, index) => (
+                    {dataTron.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}
                       />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    formatter={(value, name, props) => {
+                      return [` Số lượng: ${value}`];
+                    }}
+                    labelFormatter={(label) => label}
+                  />
+
                   <Legend
                     layout="vertical"
                     verticalAlign="middle"
@@ -98,4 +133,4 @@ function thongKeChart() {
   );
 }
 
-export default thongKeChart;
+export default ThongKeChart;

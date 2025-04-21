@@ -47,7 +47,6 @@ function HeaderAdmin({ toggleSidebar }) {
         <img className="logo" src="/image/logo.png" alt="Logo" />
       </div>
 
-
       <div className="header-center">
         <div className="contact-info">
           <Link to="#!" className="contact-item">
@@ -62,7 +61,11 @@ function HeaderAdmin({ toggleSidebar }) {
       </div>
 
       <div className="header-right">
-        <Link className="nav-link" to="/theme">
+        <Link
+          className="nav-link"
+          to="https://vercel.com/ahihis-projects-13d175bf"
+          target="_blank"
+        >
           <i className="bi bi-palette"></i>
         </Link>
         <Link

@@ -77,7 +77,7 @@ export const routes = [
     path: "/admin",
     element: <LayoutAdmin />,
     children: [
-      { path: "", element: <Navigate to="ho-so-admin" replace /> },
+      { path: "", element: <Navigate to="tong-quan" replace /> },
       {
         path: "tong-quan",
         element: <TongQuanAdmin />,

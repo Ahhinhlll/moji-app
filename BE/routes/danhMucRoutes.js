@@ -224,7 +224,7 @@ router.delete("/danhmuc/delete/:id", verifyToken, checkRole(["A00"]), remove);
  *               items:
  *                 $ref: '#/components/schemas/DanhMuc'
  */
-router.get("/danhmuc/search", verifyToken, search);
+router.get("/danhmuc/search", search);
 
 /**
  * @swagger

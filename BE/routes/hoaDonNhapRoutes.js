@@ -9,6 +9,9 @@ const {
   getByIdCTHDN,
   getAllCTHDN,
 } = require("../controllers/hoaDonNhapController");
+const { verifyToken } = require("../middlewares/authMiddleware");
+const { checkRole } = require("../middlewares/authorizeRole");
+
 const router = express.Router();
 
 /**
@@ -113,7 +116,7 @@ router.get("/hoadonnhap/getbyid/:id", getById);
  *       404:
  *         description: Hóa đơn nhập hoặc sản phẩm không tồn tại
  */
-router.post("/hoadonnhap/insert", insert);
+router.post("/hoadonnhap/insert", verifyToken, checkRole(["A00"]), insert);
 
 /**
  * @swagger
@@ -169,7 +172,7 @@ router.post("/hoadonnhap/insert", insert);
  *       404:
  *         description: Hóa đơn nhập hoặc sản phẩm không tồn tại
  */
-router.put("/hoadonnhap/update", update);
+router.put("/hoadonnhap/update", verifyToken, checkRole(["A00"]), update);
 
 /**
  * @swagger
@@ -193,7 +196,12 @@ router.put("/hoadonnhap/update", update);
  *       404:
  *         description: HoaDonNhap item not found
  */
-router.delete("/hoadonnhap/delete/:id", remove);
+router.delete(
+  "/hoadonnhap/delete/:id",
+  verifyToken,
+  checkRole(["A00"]),
+  remove
+);
 
 /**
  * @swagger

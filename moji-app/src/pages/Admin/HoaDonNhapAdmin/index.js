@@ -24,6 +24,7 @@ function HoaDonNhapAdmin() {
     window.location.replace("/dang-nhap");
   }
 
+  const [modalOpen, setModalOpen] = useState(false);
   const [imports, setImports] = useState([]);
   const [users, setUsers] = useState({});
   const [products, setProducts] = useState([]);
@@ -41,16 +42,15 @@ function HoaDonNhapAdmin() {
   ]);
 
   const addCTHoaDon = () => {
-    setNewCTHoaDons((prevState) => [
-      ...prevState,
-      { maSP: "", soLuong: 0, donGia: 0 },
-    ]);
+    // Cập nhật chi tiết hóa đơn
+    setNewCTHoaDons([...newCTHoaDons, { maSP: "", soLuong: 0, donGia: 0 }]);
   };
 
   const removeCTHoaDon = (index) => {
-    const updated = [...newCTHoaDons];
-    updated.splice(index, 1);
-    setNewCTHoaDons(updated);
+    // Xóa chi tiết hóa đơn
+    const newCTHoaDonsUpdated = [...newCTHoaDons];
+    newCTHoaDonsUpdated.splice(index, 1);
+    setNewCTHoaDons(newCTHoaDonsUpdated);
   };
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -91,25 +91,63 @@ function HoaDonNhapAdmin() {
     };
     fetchUser();
   }, []);
+  const closeModal = () => {
+    setModalOpen(false);
+    setFormData({
+      phuongThuc: "",
+      maNCC: "",
+      giamGia: 0,
+      maSP: "",
+      soLuong: 0,
+      donGia: 0,
+    });
+    setNewCTHoaDons([{ maSP: "", soLuong: 0, donGia: 0 }]);
+  };
 
   const handleAddImport = async () => {
+    if (!formData.maNCC || !formData.phuongThuc) {
+      alert("Vui lòng chọn nhà cung cấp và phương thức thanh toán.");
+      return;
+    }
+
+    if (
+      newCTHoaDons.length === 0 ||
+      newCTHoaDons.some((ct) => !ct.maSP || ct.soLuong <= 0 || ct.donGia <= 0)
+    ) {
+      alert("Vui lòng điền đầy đủ chi tiết hóa đơn (số lượng và đơn giá > 0).");
+      return;
+    }
+
+    for (let ct of newCTHoaDons) {
+      const product = await getProductById(ct.maSP);
+
+      if (ct.donGia > product.giaTien) {
+        alert(
+          `Đơn giá của sản phẩm ${ct.maSP} - ${
+            product.tenSP
+          } phải nhỏ hơn hoặc bằng giá bán (${product.giaTien.toLocaleString()}đ).`
+        );
+        return;
+      }
+    }
+
     try {
       const payload = {
         maNCC: formData.maNCC,
         maND: nguoiDung.maND,
         phuongThuc: formData.phuongThuc,
-        //ngayNhap: new Date(),
         giamGia: formData.giamGia,
         CTHoaDonNhaps: [
-          {
-            maSP: formData.maSP,
-            soLuong: formData.soLuong,
-            donGia: formData.donGia,
-          },
+          ...newCTHoaDons.map((ct) => ({
+            maSP: ct.maSP,
+            soLuong: ct.soLuong,
+            donGia: ct.donGia,
+          })),
         ],
       };
-
+      console.log("payload hóa đơn nhập", payload);
       const result = await insertImport(payload);
+
       if (result) {
         setImports((prev) => [...prev, result]);
         // Reset form
@@ -122,7 +160,8 @@ function HoaDonNhapAdmin() {
           donGia: 0,
         });
         setNewCTHoaDons([{ maSP: "", soLuong: 0, donGia: 0 }]);
-        document.querySelector("#addImportModal .btn-close").click();
+
+        setModalOpen(false);
       }
     } catch (error) {
       console.error("Lỗi khi thêm hóa đơn nhập:", error);
@@ -192,7 +231,7 @@ function HoaDonNhapAdmin() {
     const fetchSupplierDetails = async (maNCC) => {
       try {
         const supplier = await getSupplierById(maNCC);
-        console.log("ncc", supplier);
+
         setSupplier((prevSupplier) => ({
           ...prevSupplier,
           [maNCC]: supplier,
@@ -281,11 +320,7 @@ function HoaDonNhapAdmin() {
         Danh sách đơn hàng nhập
       </h3>
       <div className="d-flex justify-content-between align-items-center mb-2">
-        <button
-          className="btn-add"
-          data-bs-toggle="modal"
-          data-bs-target="#addImportModal"
-        >
+        <button className="btn-add" onClick={() => setModalOpen(true)}>
           <i className="bi bi-file-earmark-plus"></i> Thêm hóa đơn
         </button>
 
@@ -476,155 +511,176 @@ function HoaDonNhapAdmin() {
       </div>
       {/* form modal */}
 
-      <div className="modal fade" id="addImportModal" tabIndex="-1">
-        <div className="modal-dialog modal-md">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title ">Thêm thông tin mới</h5>
-              <button className="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div className="modal-body">
-              <div className="mb-3">
-                <label className="form-label">Nhân viên</label>
-                <input
-                  type="text"
-                  className="form-control mb-3"
-                  value={nguoiDung ? nguoiDung.tenND : ""}
-                  disabled
-                />
+      {modalOpen && (
+        <div className="modal show" tabIndex="-1" style={{ display: "block" }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Thêm hóa đơn nhập</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={closeModal}
+                ></button>
               </div>
-              <div className="mb-3">
-                <label className="form-label">Phương thức</label>
-                <select
-                  className="form-select mb-3"
-                  value={formData.phuongThuc}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      phuongThuc: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">-- Chọn phương thức --</option>
-                  <option value="Thanh toán khi nhận hàng">
-                    Thanh toán khi nhận hàng
-                  </option>
-                  <option value="Chuyển khoản trực tiếp">
-                    Chuyển khoản trực tiếp
-                  </option>
-                </select>
-              </div>
-
-              <div className="mb-3 me-2">
-                <label className="form-label">Phân phối</label>
-
-                <select
-                  className="form-select"
-                  value={formData.maNCC}
-                  onChange={(e) =>
-                    setFormData({ ...formData, maNCC: e.target.value })
-                  }
-                >
-                  <option value="">-- Chọn nhà cung cấp --</option>
-                  {nhaCungCaps.map((ncc) => (
-                    <option key={ncc.maNCC} value={ncc.maNCC}>
-                      {ncc.tenNCC}
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label">Nhân viên</label>
+                  <input
+                    type="text"
+                    className="form-control mb-3"
+                    value={nguoiDung ? nguoiDung.tenND : ""}
+                    disabled
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Phương thức</label>
+                  <select
+                    className="form-select mb-3"
+                    value={formData.phuongThuc}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        phuongThuc: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">-- Chọn phương thức --</option>
+                    <option value="Thanh toán khi nhận hàng">
+                      Thanh toán khi nhận hàng
                     </option>
+                    <option value="Chuyển khoản trực tiếp">
+                      Chuyển khoản trực tiếp
+                    </option>
+                  </select>
+                </div>
+
+                <div className="mb-3 me-2">
+                  <label className="form-label">Phân phối</label>
+
+                  <select
+                    className="form-select"
+                    value={formData.maNCC}
+                    onChange={(e) =>
+                      setFormData({ ...formData, maNCC: e.target.value })
+                    }
+                  >
+                    <option value="">-- Chọn nhà cung cấp --</option>
+                    {nhaCungCaps.map((ncc) => (
+                      <option key={ncc.maNCC} value={ncc.maNCC}>
+                        {ncc.tenNCC}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Giảm giá</label>
+                  <select
+                    className="form-select"
+                    value={formData.giamGia}
+                    onChange={(e) =>
+                      setFormData({ ...formData, giamGia: e.target.value })
+                    }
+                  >
+                    <option value={0}>0</option>
+                    <option value={5}>moji5k</option>
+                    <option value={10}>moji10k</option>
+                    <option value={15}>moji15k</option>
+                    <option value={20}>moji20k</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Chi tiết hóa đơn:</label>
+                  {newCTHoaDons.map((ct, index) => (
+                    <div key={index} className="d-flex align-items-center">
+                      <div className="w-100 mb-3 me-2">
+                        <label className="form-label">Sản phẩm</label>
+                        <select
+                          className="form-select mb-3"
+                          value={ct.maSP}
+                          onChange={(e) => {
+                            const updated = [...newCTHoaDons];
+                            updated[index].maSP = e.target.value;
+                            setNewCTHoaDons(updated);
+                          }}
+                        >
+                          <option value="">-- Chọn sản phẩm --</option>
+                          {sanPhams.map((sp) => (
+                            <option key={sp.maSP} value={sp.maSP}>
+                              {sp.tenSP}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="d-flex w-100 mb-3">
+                        <div className="mb-3 me-2 flex-grow-1">
+                          <label className="form-label">Số lượng</label>
+                          <input
+                            type="number"
+                            className="form-control"
+                            min={0}
+                            value={ct.soLuong}
+                            onChange={(e) => {
+                              const updated = [...newCTHoaDons];
+                              updated[index].soLuong = e.target.value;
+                              setNewCTHoaDons(updated);
+                            }}
+                          />
+                        </div>
+
+                        <div className="mb-3 me-2 flex-grow-1">
+                          <label className="form-label">Đơn giá</label>
+                          <input
+                            type="number"
+                            className="form-control"
+                            min={0}
+                            value={ct.donGia}
+                            onChange={(e) => {
+                              const updated = [...newCTHoaDons];
+                              updated[index].donGia = e.target.value;
+                              setNewCTHoaDons(updated);
+                            }}
+                          />
+                        </div>
+
+                        <button
+                          className="btn btn-danger ms-1 mt-3 align-self-center"
+                          onClick={() => removeCTHoaDon(index)}
+                        >
+                          <i className="bi bi-x-circle"></i>
+                        </button>
+                      </div>
+                    </div>
                   ))}
-                </select>
-              </div>
 
-              <div className="mb-3">
-                <label className="form-label">Giảm giá</label>
-                <select
-                  className="form-select"
-                  value={formData.giamGia}
-                  onChange={(e) =>
-                    setFormData({ ...formData, giamGia: e.target.value })
-                  }
+                  <button className="btn btn-secondary" onClick={addCTHoaDon}>
+                    <i className="bi bi-plus"></i> Thêm chi tiết
+                  </button>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={closeModal}
                 >
-                  <option value={0}>0</option>
-                  <option value={5}>moji5k</option>
-                  <option value={10}>moji10k</option>
-                  <option value={15}>moji15k</option>
-                  <option value={20}>moji20k</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Chi tiết hóa đơn:</label>
-                {newCTHoaDons.map((ct, index) => (
-                  <div key={index} className="d-flex align-items-center">
-                    <div className="w-100 mb-3 me-2">
-                      <label className="form-label">Sản phẩm</label>
-                      <select
-                        className="form-select mb-3 "
-                        value={formData.maSP}
-                        onChange={(e) =>
-                          setFormData({ ...formData, maSP: e.target.value })
-                        }
-                      >
-                        <option value="">-- Chọn sản phẩm --</option>
-                        {sanPhams.map((sp) => (
-                          <option key={sp.maSP} value={sp.maSP}>
-                            {sp.tenSP}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="d-flex w-100 mb-3">
-                      <div className="mb-3 me-2 flex-grow-1">
-                        <label className="form-label">Số lượng</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          min={0}
-                          value={formData.soLuong}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              soLuong: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="mb-3 me-2 flex-grow-1">
-                        <label className="form-label">Đơn giá</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          min={0}
-                          value={formData.donGia}
-                          onChange={(e) =>
-                            setFormData({ ...formData, donGia: e.target.value })
-                          }
-                        />
-                      </div>
-
-                      <button
-                        className="btn btn-danger ms-1 mt-3 align-self-center"
-                        onClick={() => removeCTHoaDon(index)}
-                      >
-                        <i className="bi bi-x-circle"></i>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                <button className="btn btn-secondary" onClick={addCTHoaDon}>
-                  <i className="bi bi-plus"></i> Thêm chi tiết
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleAddImport}
+                >
+                  Thêm hóa đơn
                 </button>
               </div>
             </div>
-            <div className="modal-footer d-flex justify-content-center">
-              <button className="btn btn-primary" onClick={handleAddImport}>
-                Thêm hóa đơn
-              </button>
-            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
