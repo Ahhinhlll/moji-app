@@ -100,7 +100,7 @@ router.get("/nguoidung/getbyid/:id", getById);
  *             schema:
  *               $ref: '#/components/schemas/NguoiDung'
  */
-router.post("/nguoidung/insert", verifyToken, insert);
+router.post("/nguoidung/insert", insert);
 
 /**
  * @swagger

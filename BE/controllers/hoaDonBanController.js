@@ -208,10 +208,10 @@ exports.insert = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { maHDB, trangThai } = req.body;
+    const { maHDB, trangThai, ngayBan } = req.body;
     const hoaDon = await HoaDonBan.findByPk(maHDB);
     if (hoaDon !== null) {
-      await hoaDon.update({ trangThai });
+      await hoaDon.update({ trangThai, ngayBan });
       const updatedHoaDonBan = await HoaDonBan.findByPk(maHDB, {
         include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
       });

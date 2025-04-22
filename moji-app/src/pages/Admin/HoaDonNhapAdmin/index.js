@@ -125,7 +125,7 @@ function HoaDonNhapAdmin() {
         alert(
           `Đơn giá của sản phẩm ${ct.maSP} - ${
             product.tenSP
-          } phải nhỏ hơn hoặc bằng giá bán (${product.giaTien.toLocaleString()}đ).`
+          } phải nhỏ hơn (${product.giaTien.toLocaleString()}đ).`
         );
         return;
       }

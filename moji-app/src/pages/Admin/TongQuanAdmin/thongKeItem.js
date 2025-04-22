@@ -14,7 +14,7 @@ function ThongKeItem() {
     const fetchAllTongTien = async () => {
       try {
         const doanhThu = await getAllThongKeDoanhThu();
-        setAllTongTien(doanhThu.AllDoanhThu);
+        setAllTongTien(doanhThu.AllDoanhThu ?? 0);
       } catch (error) {
         console.error("Lỗi gọi api allTongTien:", error);
       }

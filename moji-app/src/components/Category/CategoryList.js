@@ -31,7 +31,7 @@ function CategoryList({ onSelectCategory }) {
   return (
     <div className="bg-white my-2 rounded py-0 px-3">
       <h5 className="category-title">Danh mục sản phẩm</h5>
-      <ul className="list-group">
+      <ul className="list-group" style={{ height: "350px", overflowY: "auto" }}>
         <li
           className={`list-group-item list-group-item-action ${
             !selectedCategory ? "active" : ""

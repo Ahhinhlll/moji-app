@@ -72,7 +72,18 @@ function ThongKeChart() {
                 </h5>
                 <BarChart width={470} height={300} data={dataCot}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="ngayBan" />
+                  <XAxis
+                    dataKey="ngayBan"
+                    tickFormatter={(value) => {
+                      const date = new Date(value);
+                      const day = String(date.getDate()).padStart(2, "0");
+                      const month = String(date.getMonth() + 1).padStart(
+                        2,
+                        "0"
+                      );
+                      return `${day}/${month}`;
+                    }}
+                  />
                   <YAxis />
                   <Tooltip
                     formatter={(value) => value.toLocaleString() + "đ"}
