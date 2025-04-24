@@ -64,7 +64,7 @@ function CategoryList({ onSelectCategory }) {
         max="500000"
         min="0"
         type="range"
-        defaultValue="0"
+        defaultValue="500000"
       />
     </div>
   );
