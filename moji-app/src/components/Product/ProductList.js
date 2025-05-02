@@ -7,7 +7,6 @@ import "../../pages/SanPham/sanPham.scss";
 import { getCtCategoryById } from "../../services/danhMucService";
 
 const ProductList = ({ rows, selectedCategory, searchResults }) => {
-  // ✅ SỬA: thêm props searchResults
   const [productList, setProductList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -64,10 +63,8 @@ const ProductList = ({ rows, selectedCategory, searchResults }) => {
     if (!selectedProduct) return;
 
     const cartItem = { ...selectedProduct, quantity };
-    console.log("Sản phẩm thêm vào giỏ:", cartItem);
 
     const existingCart = JSON.parse(localStorage.getItem("gioHang")) || [];
-    console.log("Giỏ hàng trước khi thêm:", existingCart);
 
     const existingProductIndex = existingCart.findIndex(
       (item) => item.maSP === selectedProduct.maSP
@@ -80,7 +77,7 @@ const ProductList = ({ rows, selectedCategory, searchResults }) => {
     } else {
       updatedCart = [...existingCart, cartItem];
     }
-    console.log("Giỏ hàng sau khi thêm:", updatedCart);
+
     localStorage.setItem("gioHang", JSON.stringify(updatedCart));
 
     setAddedProduct(cartItem);
@@ -89,6 +86,35 @@ const ProductList = ({ rows, selectedCategory, searchResults }) => {
     setTimeout(() => setShowNotification(false), 3000);
 
     handleCloseModal();
+  };
+
+  const [likedProducts, setLikedProducts] = useState([]);
+  const [favoriteNotification, setFavoriteNotification] = useState("");
+
+  useEffect(() => {
+    const storedLikes = JSON.parse(localStorage.getItem("yeuThich")) || [];
+    setLikedProducts(storedLikes);
+  }, []);
+
+  const handleToggleFavorite = (product) => {
+    const existing = likedProducts.find((item) => item.maSP === product.maSP);
+    let updatedFavorites;
+
+    if (existing) {
+      updatedFavorites = likedProducts.filter(
+        (item) => item.maSP !== product.maSP
+      );
+      setFavoriteNotification("Xóa sản phẩm yêu thích thành công!");
+      window.location.reload();
+    } else {
+      updatedFavorites = [...likedProducts, product];
+      setFavoriteNotification("Thêm sản phẩm yêu thích thành công!");
+    }
+
+    setLikedProducts(updatedFavorites);
+    localStorage.setItem("yeuThich", JSON.stringify(updatedFavorites));
+
+    setTimeout(() => setFavoriteNotification(""), 3000);
   };
 
   return (
@@ -111,10 +137,20 @@ const ProductList = ({ rows, selectedCategory, searchResults }) => {
                   {product.giaTien.toLocaleString("vi-VN")}đ
                 </p>
               </Link>
-              <div className="card-overlay">
-                <span className="icon-wrapper">
-                  <i className="bi bi-heart-fill"></i>
+              <div className="card-overlay d-flex justify-content-center align-items-center">
+                <span
+                  className="icon-wrapper"
+                  onClick={() => handleToggleFavorite(product)}
+                >
+                  <i
+                    className={`bi ${
+                      likedProducts.some((item) => item.maSP === product.maSP)
+                        ? "bi-heart-fill text-danger"
+                        : "bi-heart"
+                    }`}
+                  ></i>
                 </span>
+
                 <span className="separator">|</span>
                 <span
                   className="icon-wrapper"
@@ -213,6 +249,12 @@ const ProductList = ({ rows, selectedCategory, searchResults }) => {
             Chúc mừng! Bạn đã thêm thành công sản phẩm{" "}
             <strong>{addedProduct.tenSP}</strong> vào giỏ hàng!
           </p>
+        </div>
+      )}
+      {/* Thông báo khi thêm sản phẩm vào yêu thích */}
+      {favoriteNotification && (
+        <div className="like-notification d-flex align-items-center">
+          <p>{favoriteNotification}</p>
         </div>
       )}
     </div>

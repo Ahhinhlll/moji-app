@@ -7,6 +7,8 @@ const {
   remove,
   search,
   thongKeSoLuongSPNhoHon5,
+  getAllSPTheoGia,
+  getAllSPTheoGiaTien,
 } = require("../controllers/sanPhamController");
 const { verifyToken } = require("../middlewares/authMiddleware");
 const { checkRole } = require("../middlewares/authorizeRole");
@@ -187,6 +189,8 @@ router.delete("/sanpham/delete/:id", verifyToken, checkRole(["A00"]), remove);
  *                 $ref: '#/components/schemas/SanPham'
  */
 router.get("/sanpham/search", search);
+router.get("/sanpham/giatien", getAllSPTheoGia);
+router.get("/sanpham/theogia", getAllSPTheoGiaTien);
 router.get(
   "/sanpham/sosanphamnhohon5",
   verifyToken,

@@ -8,6 +8,10 @@ import {
 } from "../../services/danhMucService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./sanPham.scss";
+import {
+  getSelectGiaTien,
+  getTheoGiaTien,
+} from "../../services/sanPhamService";
 
 function SanPham() {
   const { id } = useParams();
@@ -71,6 +75,72 @@ function SanPham() {
     }
   };
 
+  const [sapXep, setSapXep] = useState("moiNhat");
+  const [sortedProducts, setSortedProducts] = useState([]);
+  const [locGia, setLocGia] = useState(500000);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!tuKhoa && !ma_CTDM) {
+        try {
+          const res = await getSelectGiaTien(sapXep);
+          setSortedProducts(res);
+        } catch (error) {
+          console.error("Lỗi sắp xếp sản phẩm:", error);
+        }
+      }
+    };
+    fetchData();
+  }, [sapXep, tuKhoa, ma_CTDM]);
+
+  useEffect(() => {
+    const fetchDataTheoGia = async () => {
+      if (!tuKhoa && !ma_CTDM) {
+        console.log("Đang lọc theo giá:", locGia);
+        try {
+          const res = await getTheoGiaTien(Number(locGia));
+          console.log("Dữ liệu sau khi lọc:", res);
+          setSortedProducts(res);
+        } catch (error) {
+          console.error("Lỗi lọc theo giá:", error);
+        }
+      }
+    };
+    fetchDataTheoGia();
+  }, [locGia, tuKhoa, ma_CTDM]);
+
+  const handleSortChange = (e) => {
+    setSapXep(e.target.value);
+  };
+
+  const handlePriceChange = (gia) => {
+    setLocGia(gia);
+  };
+
+  // Phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 16;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [tuKhoa, ma_CTDM]);
+
+  const getPaginatedData = () => {
+    const data = tuKhoa || ma_CTDM ? searchResults : sortedProducts;
+    const indexOfLastRecord = currentPage * recordsPerPage;
+    const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+    return data.slice(indexOfFirstRecord, indexOfLastRecord);
+  };
+
+  const totalPages = Math.ceil(
+    (tuKhoa || ma_CTDM ? searchResults.length : sortedProducts.length) /
+      recordsPerPage
+  );
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className="container my-4">
       {id ? (
@@ -79,26 +149,78 @@ function SanPham() {
         <div className="row">
           {/* DANH MỤC */}
           <div className="col-md-3">
-            <CategoryList onSelectCategory={handleSelectedCategory} />
+            <CategoryList
+              onSelectCategory={handleSelectedCategory}
+              onPriceChange={handlePriceChange}
+            />
           </div>
 
           {/* DANH SÁCH SẢN PHẨM */}
           <div className="col-md-9">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="product-title fw-bold">{selectedCategory.name}</h5>
-              <select className="form-select w-auto" defaultValue={0}>
-                <option value={0}>Mới nhất</option>
-                <option value={1}>Giá tăng dần</option>
-                <option value={2}>Giá giảm dần</option>
+              <select
+                className="form-select w-auto"
+                value={sapXep}
+                onChange={handleSortChange}
+              >
+                <option value="moiNhat">Mới nhất</option>
+                <option value="giaTangDan">Giá tăng dần</option>
+                <option value="giaGiamDan">Giá giảm dần</option>
               </select>
             </div>
 
             <ProductList
-              rows={6}
+              rows={100}
               selectedCategory={selectedCategory.id}
               searchKeyword={tuKhoa}
-              searchResults={searchResults}
+              searchResults={getPaginatedData()}
             />
+
+            {/* Phân trang */}
+            <nav>
+              <ul className="pagination-container">
+                {currentPage > 1 && (
+                  <li>
+                    <button
+                      className="pagination-btn"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                    >
+                      &laquo;
+                    </button>
+                  </li>
+                )}
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .slice(
+                    Math.max(currentPage - 2, 0),
+                    Math.min(currentPage + 1, totalPages)
+                  )
+                  .map((page) => (
+                    <li key={page}>
+                      <button
+                        className={`pagination-btn ${
+                          currentPage === page ? "active" : ""
+                        }`}
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </button>
+                    </li>
+                  ))}
+
+                {currentPage < totalPages && (
+                  <li>
+                    <button
+                      className="pagination-btn"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                    >
+                      &raquo;
+                    </button>
+                  </li>
+                )}
+              </ul>
+            </nav>
           </div>
         </div>
       )}

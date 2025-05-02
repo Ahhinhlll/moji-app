@@ -4,7 +4,7 @@ import { getAllCtCategory } from "../../services/danhMucService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../pages/SanPham/sanPham.scss";
 
-function CategoryList({ onSelectCategory }) {
+function CategoryList({ onSelectCategory, onPriceChange }) {
   const [categories, setCategories] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,6 +26,13 @@ function CategoryList({ onSelectCategory }) {
   const handleCategoryClick = (categoryId, categoryName) => {
     navigate(`/san-pham?ma_CTDM=${categoryId || ""}`);
     onSelectCategory(categoryId, categoryName);
+  };
+  const [gia, setGia] = useState(500000);
+  const handlePriceChange = (e) => {
+    const giaMoi = e.target.value;
+    console.log("Giá mới: ", giaMoi);
+    setGia(giaMoi);
+    onPriceChange(giaMoi);
   };
 
   return (
@@ -58,13 +65,14 @@ function CategoryList({ onSelectCategory }) {
       </ul>
 
       <h5 className="price-title mt-4">GIÁ</h5>
-      <p>Từ 0đ : 500,000đ</p>
+      <p>Từ 0đ : {Number(gia).toLocaleString("vi-VN")}đ</p>
       <input
         className="price-range w-100"
         max="500000"
         min="0"
         type="range"
-        defaultValue="500000"
+        value={gia}
+        onChange={handlePriceChange} // Hàm này sẽ gọi onPriceChange từ parent
       />
     </div>
   );

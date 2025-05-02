@@ -6,10 +6,10 @@ function donHang() {
       <table className="table">
         <thead>
           <tr>
-            <td style={{ fontWeight: "500" }}>Mã đơn hàng</td>
-            <td style={{ fontWeight: "500" }}>Ngày</td>
+            <td style={{ fontWeight: "500" }}>Ngày đặt</td>
             <td style={{ fontWeight: "500" }}>Tổng đơn</td>
             <td style={{ fontWeight: "500" }}>Trạng thái</td>
+            <td style={{ fontWeight: "500" }}>Mã đơn hàng</td>
           </tr>
         </thead>
       </table>

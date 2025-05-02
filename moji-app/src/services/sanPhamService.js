@@ -29,3 +29,12 @@ export const searchProducts = async (query) => {
   const response = await request.get(`sanpham/search?q=${query}`);
   return response.data;
 };
+
+export const getSelectGiaTien = async (query) => {
+  const response = await request.get(`sanpham/giatien?sapXep=${query}`);
+  return response.data;
+};
+export const getTheoGiaTien = async (query) => {
+  const response = await request.get(`sanpham/theogia?giaTien=${query}`);
+  return response.data;
+};

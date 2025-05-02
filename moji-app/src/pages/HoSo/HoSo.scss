@@ -96,3 +96,35 @@
     }
   }
 }
+
+// yêu thích
+.yeuthich {
+  .name_yt {
+    font-weight: 500 !important;
+    font-size: 11px !important;
+  }
+  .gia_yt {
+    font-weight: 500 !important;
+    font-size: 12px !important;
+  }
+  .icon_yt {
+    padding: 4px 8px;
+    bottom: 105px;
+  }
+  .icon_item_yt i {
+    font-size: 16px;
+  }
+}
+.btn_yt {
+  .btn-custom {
+    background-color: #ff85c2eb;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    margin-right: 10px;
+    &:hover {
+      background-color: #ff69b4;
+    }
+  }
+}

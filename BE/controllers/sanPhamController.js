@@ -127,3 +127,54 @@ exports.thongKeSoLuongSPNhoHon5 = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// getall sản phâm theo giá (mới nhất, giá tăng dần, giá giảm dần)
+exports.getAllSPTheoGia = async (req, res) => {
+  try {
+    const { sapXep } = req.query;
+    let order = [];
+
+    if (sapXep === "moiNhat") {
+      order = [["createdAt", "DESC"]];
+    } else if (sapXep === "giaTangDan") {
+      order = [["giaTien", "ASC"]];
+    } else if (sapXep === "giaGiamDan") {
+      order = [["giaTien", "DESC"]];
+    }
+
+    const sanPhams = await SanPham.findAll({
+      order: order,
+    });
+    res.status(200).json(sanPhams);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+// get all sản phẩm theo giá(dưới 100, 100-200, 200-300, 300-400, 400-500, trên 500)
+exports.getAllSPTheoGiaTien = async (req, res) => {
+  try {
+    const { giaTien } = req.query;
+    let where = {};
+
+    if (giaTien === "duoi100") {
+      where = { giaTien: { [Op.lt]: 100000 } };
+    } else if (giaTien === "tu100Den200") {
+      where = { giaTien: { [Op.between]: [100000, 200000] } };
+    } else if (giaTien === "tu200Den300") {
+      where = { giaTien: { [Op.between]: [200000, 300000] } };
+    } else if (giaTien === "tu300Den400") {
+      where = { giaTien: { [Op.between]: [300000, 400000] } };
+    } else if (giaTien === "tu400Den500") {
+      where = { giaTien: { [Op.between]: [400000, 500000] } };
+    } else if (giaTien === "tren500") {
+      where = { giaTien: { [Op.gt]: 500000 } };
+    }
+
+    const sanPhams = await SanPham.findAll({
+      where: where,
+    });
+    res.status(200).json(sanPhams);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
