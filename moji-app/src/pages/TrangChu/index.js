@@ -49,7 +49,7 @@ function TrangChu() {
             )
           )}
         </div>
-v
+        v
         <ProductList rows={1} />
       </div>
       {/* end topic */}
@@ -58,7 +58,7 @@ v
       <div className="container my-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="m-0">Bộ sưu tập</h2>
-          <Link to="/chu-de" className="view-all-link">
+          <Link to="/san-pham" className="view-all-link">
             Xem thêm
           </Link>
         </div>

@@ -22,6 +22,8 @@ import ThongTin from "./../pages/HoSo/thongTin";
 import DoiPass from "./../pages/HoSo/doiPass";
 import YeuThich from "./../pages/HoSo/yeuThich";
 import DonHang from "./../pages/HoSo/donHang";
+import HeThongCuaHang from "../pages/HeThongCuaHang";
+import QuenMatKhau from "../pages/QuenMatKhau";
 
 export const routes = [
   // user
@@ -69,6 +71,14 @@ export const routes = [
           { path: "sp-yeu-thich", element: <YeuThich /> },
           { path: "ls-don-hang", element: <DonHang /> },
         ],
+      },
+      {
+        path: "he-thong-cua-hang",
+        element: <HeThongCuaHang />,
+      },
+      {
+        path: "quen-mat-khau",
+        element: <QuenMatKhau />,
       },
     ],
   },

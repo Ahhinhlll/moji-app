@@ -95,9 +95,9 @@ function Header() {
       <div className="top-bar d-flex justify-content-between px-4 py-2 fw-bold">
         <div className="left-section">MOJI - BÌNH BÁNH BÈO</div>
         <div className="right-section d-flex gap-3">
-          <Link to="/stores">HỆ THỐNG CỬA HÀNG</Link>
-          <Link to="/about">VỀ MOJI</Link>
-          <Link to="/careers">TUYỂN DỤNG</Link>
+          <Link to="he-thong-cua-hang">HỆ THỐNG CỬA HÀNG</Link>
+          <Link to="he-thong-cua-hang">VỀ MOJI</Link>
+          <Link to="he-thong-cua-hang">TUYỂN DỤNG</Link>
         </div>
       </div>
       {/* Phần 2: Logo, Tìm kiếm, Giỏ hàng */}
@@ -126,43 +126,52 @@ function Header() {
 
             {/* Danh mục */}
             <div className="mt-2 hoverDanhMuc">
-              <Link to="/hoa" className="mx-2 text-dark text-decoration-none">
+              <Link
+                to="san-pham"
+                className="mx-2 text-dark text-decoration-none"
+              >
                 Hoa
               </Link>
               <Link
-                to="/blindbox"
+                to="san-pham"
                 className="mx-2 text-dark text-decoration-none"
               >
                 Blindbox official
               </Link>
               <Link
-                to="/gau-bong"
+                to="san-pham"
                 className="mx-2 text-dark text-decoration-none"
               >
                 Gấu bông
               </Link>
               <Link
-                to="/tui-deo"
+                to="san-pham"
                 className="mx-2 text-dark text-decoration-none"
               >
                 Túi đeo
               </Link>
-              <Link to="/vi" className="mx-2 text-dark text-decoration-none">
+              <Link
+                to="san-pham"
+                className="mx-2 text-dark text-decoration-none"
+              >
                 Ví
               </Link>
               <Link
-                to="/moc-khoa"
+                to="san-pham"
                 className="mx-2 text-dark text-decoration-none"
               >
                 Móc khóa
               </Link>
               <Link
-                to="/guong-luoc"
+                to="san-pham"
                 className="mx-2 text-dark text-decoration-none"
               >
                 Gương lược
               </Link>
-              <Link to="/idol" className="mx-2 text-dark text-decoration-none">
+              <Link
+                to="san-pham"
+                className="mx-2 text-dark text-decoration-none"
+              >
                 Idol
               </Link>
             </div>
