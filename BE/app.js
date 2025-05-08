@@ -14,6 +14,8 @@ const hoaDonBanRoutes = require("./routes/hoaDonBanRoutes");
 const { PORT } = require("./config/config");
 
 const app = express();
+require("dotenv").config();
+const geminiRoutes = require("./routes/geminiRoutes");
 
 app.use(
   cors({
@@ -29,6 +31,7 @@ app.use(express.json());
 //   console.log("Body nhận được:", req.body);
 //   next();
 // });
+app.use("/api", geminiRoutes);
 
 app.use("/uploads", express.static("public/uploads"));
 

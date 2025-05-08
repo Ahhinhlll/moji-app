@@ -7,6 +7,7 @@ import "./trangChu.scss";
 import BannerHome from "../../components/Home/BannerHome";
 import CollectionHome from "../../components/Home/CollectionHome";
 import ProductList from "../../components/Product/ProductList";
+import Chat from "../../components/chat";
 
 function TrangChu() {
   return (
@@ -66,6 +67,7 @@ function TrangChu() {
       </div>
 
       {/* end Collection */}
+      <Chat />
     </>
   );
 }

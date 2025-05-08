@@ -211,7 +211,7 @@ function HoaDonBanAdmin() {
         <tbody>
           {currentRecords.map((bill) => (
             <tr key={bill.maHDB}>
-              <td>{bill.ngayBan}</td>
+              <td>{new Date(bill.ngayBan).toLocaleDateString("vi-VN")}</td>
               <td>{users[bill.maND]?.tenND}</td>
               {/* <td>{bill.giamGia}đ</td> */}
               <td>{users[bill.maND]?.sdt}</td>

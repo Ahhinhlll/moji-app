@@ -214,12 +214,14 @@ function ThanhToan() {
                   <td>
                     {item.tenSP}-{item.mauSP}
                     <div className="product-price">
-                      Đơn giá: <strong>{item.giaTien}đ</strong>
+                      Đơn giá: <strong>{item.giaTien.toLocaleString()}đ</strong>
                     </div>
                   </td>
                   <td>{item.quantity}</td>
                   <td>
-                    <strong>{item.giaTien * item.quantity}đ</strong>
+                    <strong>
+                      {(item.giaTien * item.quantity).toLocaleString()}đ
+                    </strong>
                   </td>
                 </tr>
               ))}
