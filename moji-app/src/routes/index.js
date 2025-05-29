@@ -24,6 +24,8 @@ import YeuThich from "./../pages/HoSo/yeuThich";
 import DonHang from "./../pages/HoSo/donHang";
 import HeThongCuaHang from "../pages/HeThongCuaHang";
 import QuenMatKhau from "../pages/QuenMatKhau";
+import PaymentResultPage from "../pages/payment-result";
+import Test from "../pages/test";
 
 export const routes = [
   // user
@@ -60,6 +62,14 @@ export const routes = [
       {
         path: "thanh-toan",
         element: <ThanhToan />,
+      },
+      {
+        path: "payment-result",
+        element: <PaymentResultPage />,
+      },
+      {
+        path: "test",
+        element: <Test />,
       },
       {
         path: "ho-so",

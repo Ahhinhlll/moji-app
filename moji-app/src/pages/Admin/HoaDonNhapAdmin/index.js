@@ -362,7 +362,7 @@ function HoaDonNhapAdmin() {
               {/* <td>{imp.giamGia}đ</td> */}
               <td>{supplier[imp.maNCC]?.sdt}</td>
               <td>{supplier[imp.maNCC]?.diaChi}</td>
-              <td>{imp.tongTien}đ</td>
+              <td>{imp.tongTien.toLocaleString("vi-VN")}đ</td>
               <td>
                 <button
                   className="btn btn-danger me-2"
@@ -491,8 +491,8 @@ function HoaDonNhapAdmin() {
                             height="70"
                           />
                         </td>
-                        <td>{detail.donGia}đ</td>
-                        <td>{detail.thanhTien}đ</td>
+                        <td>{detail.donGia.toLocaleString("vi-VN")}đ</td>
+                        <td>{detail.thanhTien.toLocaleString("vi-VN")}đ</td>
                         <td>
                           <button
                             className="btn btn-danger"

@@ -16,6 +16,7 @@ const { PORT } = require("./config/config");
 const app = express();
 require("dotenv").config();
 const geminiRoutes = require("./routes/geminiRoutes");
+const vnpayRoute = require("./routes/vnpayRoutes");
 
 app.use(
   cors({
@@ -27,11 +28,9 @@ app.use(
 );
 
 app.use(express.json());
-// app.use((req, res, next) => {
-//   console.log("Body nhận được:", req.body);
-//   next();
-// });
+
 app.use("/api", geminiRoutes);
+app.use("/api", vnpayRoute);
 
 app.use("/uploads", express.static("public/uploads"));
 

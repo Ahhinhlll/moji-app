@@ -117,18 +117,6 @@ function HoaDonBanAdmin() {
       console.error("Lỗi khi xóa hóa đơn:", error);
     }
   };
-  // if (!data.CTHoaDonBans || data.CTHoaDonBans.length === 0) {
-  //   // Đã xóa toàn bộ hóa đơn
-  //   setBills((prev) => prev.filter((bill) => bill.maHDB !== id));
-  //   setSelectedBill(null);
-  // } else {
-  //   // Chỉ xóa 1 chi tiết hóa đơn
-  //   const updated = await getBillById(selectedBill.maHDB);
-  //   setBills((prev) =>
-  //     prev.map((bill) => (bill.maHDB === updated.maHDB ? updated : bill))
-  //   );
-  //   setSelectedBill(updated);
-  // }
 
   const handleTrangThai = async (maHDB, newTrangThai) => {
     try {
@@ -217,7 +205,7 @@ function HoaDonBanAdmin() {
               <td>{users[bill.maND]?.sdt}</td>
               <td>{users[bill.maND]?.diaChi}</td>
               <td>{users[bill.maND]?.email}</td>
-              <td>{bill.tongTien}đ</td>
+              <td>{bill.tongTien.toLocaleString("vi-VN")}đ</td>
               {/* <td>{bill.ghiChu}</td> */}
 
               <td>
@@ -358,8 +346,8 @@ function HoaDonBanAdmin() {
                             height="70"
                           />
                         </td>
-                        <td>{detail.donGia}đ</td>
-                        <td>{detail.thanhTien}đ</td>
+                        <td>{detail.donGia.toLocaleString("vi-VN")}đ</td>
+                        <td>{detail.thanhTien.toLocaleString("vi-VN")}đ</td>
                         <td>
                           <button
                             className="btn btn-danger"

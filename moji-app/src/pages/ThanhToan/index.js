@@ -4,6 +4,7 @@ import "./thanhToan.scss";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getAllUsers } from "../../services/nguoiDungService";
 import { createBill } from "../../services/hoaDonBanService";
+import { createPaymentUrl } from "../../services/vnPayService";
 function ThanhToan() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,27 +57,46 @@ function ThanhToan() {
       alert("Vui lòng đồng ý với các điều khoản trước khi thanh toán.");
       return;
     }
+
     try {
-      const data = await createBill({
+      const orderData = {
         giamGia: giamTien,
         phuongThuc: phuongThuc,
         maND: nguoiDung.maND,
-        //ghiChu: ghiChu,
         CTHoaDonBans: detailProduct
           ? [{ maSP: cartItems[0].maSP, soLuong: cartItems[0].quantity }]
           : cartItems.map((item) => ({
               maSP: item.maSP,
               soLuong: item.quantity,
             })),
-      });
-      if (data) {
-        alert("Đặt hàng thành công");
-        localStorage.removeItem("gioHang");
-        navigate("/");
+      };
+
+      if (phuongThuc === "Thanh toán khi nhận hàng") {
+        const data = await createBill(orderData);
+        if (data) {
+          alert("Đặt hàng thành công!");
+          localStorage.removeItem("gioHang");
+          navigate("/");
+        }
+      } else if (phuongThuc === "Chuyển khoản trực tiếp") {
+        const tongTienSauGiam = total - giamTien;
+
+        const res = await createPaymentUrl({
+          amount: tongTienSauGiam,
+        });
+
+        const paymentUrl = res?.data?.paymentUrl || res?.paymentUrl;
+        if (paymentUrl) {
+          localStorage.setItem("orderData", JSON.stringify(orderData));
+          window.location.href = paymentUrl;
+        } else {
+          console.error("Không tìm thấy link thanh toán:", res);
+          alert("Không thể tạo link thanh toán.");
+        }
       }
     } catch (error) {
       console.error("Lỗi thanh toán:", error);
-      alert("Thanh toán thất bại. Vui lòng đăng nhập trước khi thanh toán.");
+      alert("Thanh toán thất bại. Vui lòng đăng nhập trước.");
       navigate("/dang-nhap");
     }
   };
@@ -94,21 +114,18 @@ function ThanhToan() {
               className="form-control"
               placeholder="Họ tên *"
               defaultValue={nguoiDung.tenND}
-              readOnly
             />
             <input
               type="text"
               className="form-control"
               placeholder="Điện thoại *"
               defaultValue={nguoiDung.sdt}
-              readOnly
             />
             <input
               type="email"
               className="form-control"
               placeholder="Email *"
               defaultValue={nguoiDung.email}
-              readOnly
             />
 
             <input
@@ -116,7 +133,6 @@ function ThanhToan() {
               className="form-control"
               placeholder="Địa chỉ chi tiết *"
               defaultValue={nguoiDung.diaChi}
-              readOnly
             />
 
             <textarea

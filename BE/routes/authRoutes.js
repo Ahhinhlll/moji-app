@@ -1,5 +1,6 @@
 const express = require("express");
-const { login } = require("../controllers/authController");
+const { login, googleLogin } = require("../controllers/authController");
+
 const router = express.Router();
 
 /**
@@ -40,5 +41,6 @@ const router = express.Router();
  *         description: Tài khoản không tồn tại
  */
 router.post("/auth/login", login);
+router.post("/auth/google-login", googleLogin);
 
 module.exports = router;

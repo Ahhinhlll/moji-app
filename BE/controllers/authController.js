@@ -2,6 +2,9 @@ const jwt = require("jsonwebtoken");
 const NguoiDung = require("../models/nguoiDungModel");
 const config = require("../config/config");
 const md5 = require("md5");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 exports.login = async (req, res) => {
   try {
     const { taiKhoan, matKhau } = req.body;
@@ -28,3 +31,6 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Đăng nhập bằng Google
+exports.googleLogin = async (req, res) => {};

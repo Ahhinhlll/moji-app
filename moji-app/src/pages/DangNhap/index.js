@@ -118,13 +118,7 @@ function DangNhap() {
                   Đăng nhập bằng Facebook
                 </button>
 
-                <button
-                  className="btn btn-danger w-100"
-                  onClick={() =>
-                    (window.location.href =
-                      "https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox")
-                  }
-                >
+                <button className="btn btn-danger w-100">
                   <i className="bi bi-google me-2"></i>
                   Đăng nhập bằng Google
                 </button>
