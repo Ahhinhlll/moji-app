@@ -13,8 +13,10 @@ const {
   thongKeSoLuongHDBChuaDuyet,
   thongKeDoanhThuNgay,
   thongKeTop5DanhMucBanChay,
-  thongKeTop5SanPhamBanChay,
-  thongKeDonHangGanDay,
+
+  getByUser,
+  huyHoaDon,
+  getPhanLoaiTrangThai,
 } = require("../controllers/hoaDonBanController");
 const { verifyToken } = require("../middlewares/authMiddleware");
 const { checkRole } = require("../middlewares/authorizeRole");
@@ -25,8 +27,16 @@ router.get("/hoadonban/getall", getAll);
 router.get("/hoadonban/getbyid/:id", getById);
 router.post("/hoadonban/insert", verifyToken, insert);
 router.put("/hoadonban/update", verifyToken, checkRole(["A00"]), update);
+router.put("/hoadonban/huydonhang", verifyToken, huyHoaDon);
 router.delete("/hoadonban/delete/:id", verifyToken, checkRole(["A00"]), remove);
 router.get("/hoadonban/search", search);
+router.get("/hoadonban/user/:maND", verifyToken, getByUser);
+router.get(
+  "/hoadonban/phanloaitrangthai",
+  verifyToken,
+  checkRole(["A00"]),
+  getPhanLoaiTrangThai
+);
 
 router.get("/cthoadonban/getall", getAllCTHDB);
 router.get("/cthoadonban/getbyid/:id", getByIdCTHDB);
@@ -60,18 +70,6 @@ router.get(
   verifyToken,
   checkRole(["A00"]),
   thongKeTop5DanhMucBanChay
-);
-router.get(
-  "/thongke/topsanphambanchay",
-  verifyToken,
-  checkRole(["A00"]),
-  thongKeTop5SanPhamBanChay
-);
-router.get(
-  "/thongke/donhangganday",
-  verifyToken,
-  checkRole(["A00"]),
-  thongKeDonHangGanDay
 );
 
 module.exports = router;

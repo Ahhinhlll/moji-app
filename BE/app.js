@@ -11,6 +11,7 @@ const authRoutes = require("./routes/authRoutes");
 const upLoadRoutes = require("./routes/upLoadRoutes");
 const hoaDonNhapRoutes = require("./routes/hoaDonNhapRoutes");
 const hoaDonBanRoutes = require("./routes/hoaDonBanRoutes");
+//const payOSRoutes = require("./routes/payosRoutes");
 const { PORT } = require("./config/config");
 
 const app = express();
@@ -43,6 +44,7 @@ app.use("/api", authRoutes);
 app.use("/api", upLoadRoutes);
 app.use("/api", hoaDonNhapRoutes);
 app.use("/api", hoaDonBanRoutes);
+//app.use("/api", payOSRoutes);
 
 // Thiết lập Swagger
 setupSwagger(app);

@@ -27,6 +27,10 @@ export const updateBill = async (data) => {
   const response = await request.put("hoadonban/update", data);
   return response.data;
 };
+export const huyDonHang = async (data) => {
+  const response = await request.put("hoadonban/huydonhang", data);
+  return response.data;
+};
 
 export const deleteBill = async (id) => {
   const response = await request.delete(`hoadonban/delete/${id}`);
@@ -34,5 +38,9 @@ export const deleteBill = async (id) => {
 };
 export const searchBill = async (query) => {
   const response = await request.get(`hoadonban/search?q=${query}`);
+  return response.data;
+};
+export const getHistoryBillByUser = async (id) => {
+  const response = await request.get(`/hoadonban/user/${id}`);
   return response.data;
 };

@@ -216,6 +216,7 @@ function HoaDonBanAdmin() {
                 >
                   <option value="Chờ duyệt">Chờ duyệt</option>
                   <option value="Đã duyệt">Đã duyệt</option>
+                  <option value="Đã hủy">Đã hủy</option>
                 </select>
               </td>
               <td>

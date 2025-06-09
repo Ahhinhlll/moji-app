@@ -342,17 +342,25 @@ exports.thongKeSoLuongHDBChuaDuyet = async (req, res) => {
 };
 
 // thống kê doanh thư theo ngày trong 7 ngày gần nhất
+
 exports.thongKeDoanhThuNgay = async (req, res) => {
   try {
-    const AllDoanhThuNgay = await HoaDonBan.findAll({
+    // Lấy 7 ngày gần nhất có doanh thu > 0
+    const doanhThuRaw = await HoaDonBan.findAll({
       attributes: [
         [Sequelize.fn("DATE", Sequelize.col("ngayBan")), "ngayBan"],
         [Sequelize.fn("SUM", Sequelize.col("tongTien")), "doanhThu"],
       ],
       group: [Sequelize.fn("DATE", Sequelize.col("ngayBan"))],
-      order: [["ngayBan", "ASC"]],
+      having: Sequelize.literal("SUM(tongTien) > 0"),
+      order: [[Sequelize.fn("DATE", Sequelize.col("ngayBan")), "DESC"]],
       limit: 7,
+      raw: true,
     });
+    // Sắp xếp lại tăng dần để hiển thị đúng thứ tự thời gian
+    const AllDoanhThuNgay = doanhThuRaw.sort((a, b) =>
+      a.ngayBan.localeCompare(b.ngayBan)
+    );
     res.status(200).json({ AllDoanhThuNgay });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -362,6 +370,7 @@ exports.thongKeDoanhThuNgay = async (req, res) => {
 // thống kê top 5 danh mục có số lượng sản phẩm bán ra nhiều nhất
 exports.thongKeTop5DanhMucBanChay = async (req, res) => {
   try {
+    // Chỉ lấy top 5 danh mục có số lượng bán > 0
     const AllTop5DanhMucBanChay = await CTHoaDonBan.findAll({
       attributes: [
         [Sequelize.col("SanPham.ma_CTDM"), "ma_CTDM"],
@@ -383,10 +392,11 @@ exports.thongKeTop5DanhMucBanChay = async (req, res) => {
         },
       ],
       group: ["SanPham.ma_CTDM", "SanPham.CTDanhMuc.tenCTDM"],
+      having: Sequelize.literal("SUM(CT_HoaDonBan.soLuong) > 0"),
       order: [
         [Sequelize.fn("SUM", Sequelize.col("CT_HoaDonBan.soLuong")), "DESC"],
       ],
-      limit: 5,
+      limit: 10,
       raw: true,
     });
 
@@ -396,56 +406,83 @@ exports.thongKeTop5DanhMucBanChay = async (req, res) => {
   }
 };
 
-// thống kê top 5 sản phẩm bán chạy nhất (sản phâm, danh muc, số lượng bán, tong tiền)
-exports.thongKeTop5SanPhamBanChay = async (req, res) => {
+// Lấy hóa đơn bán theo người dùng (theo id người dùng), có phân loại trạng thái
+exports.getByUser = async (req, res) => {
   try {
-    const AllTop5SanPhamBanChay = await CTHoaDonBan.findAll({
-      attributes: [
-        [Sequelize.col("SanPham.maSP"), "maSP"],
-        [Sequelize.col("SanPham.tenSP"), "tenSP"],
-        [Sequelize.col("SanPham.CTDanhMuc.tenCTDM"), "tenCTDM"],
-        [Sequelize.fn("SUM", Sequelize.col("CT_HoaDonBan.soLuong")), "soLuong"],
-        [
-          Sequelize.fn("SUM", Sequelize.col("CT_HoaDonBan.thanhTien")),
-          "tongTien",
-        ],
-      ],
+    const { maND } = req.params;
+    const hoaDonBans = await HoaDonBan.findAll({
+      where: { maND },
       include: [
         {
-          model: SanPham,
-          as: "SanPham",
-          attributes: [],
+          model: NguoiDung,
+          as: "NguoiDung",
+          attributes: ["tenND", "sdt", "email", "diaChi"],
+        },
+        {
+          model: CTHoaDonBan,
+          as: "CTHoaDonBans",
           include: [
             {
-              model: CTDanhMuc,
-              as: "CTDanhMuc",
-              attributes: [],
+              model: SanPham,
+              as: "SanPham",
+              attributes: ["tenSP", "anhSP"],
             },
           ],
         },
       ],
-      group: ["SanPham.maSP", "SanPham.tenSP", "SanPham.CTDanhMuc.tenCTDM"],
-      order: [
-        [Sequelize.fn("SUM", Sequelize.col("CT_HoaDonBan.soLuong")), "DESC"],
-      ],
-      limit: 5,
-      raw: true,
+      order: [["ngayBan", "DESC"]],
     });
-    res.status(200).json({ AllTop5SanPhamBanChay });
+
+    // Phân loại theo trạng thái
+    const daDuyet = hoaDonBans.filter((hd) => hd.trangThai === "Đã duyệt");
+    const choDuyet = hoaDonBans.filter((hd) => hd.trangThai === "Chờ duyệt");
+    const daHuy = hoaDonBans.filter((hd) => hd.trangThai === "Đã hủy");
+
+    res.status(200).json({
+      daDuyet,
+      choDuyet,
+      daHuy,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-// thống kê đơn hàng đã đặt gần đây (ngày bán, người dùng , trang thái, số lượng)
-exports.thongKeDonHangGanDay = async (req, res) => {
+
+// "ấn hủy đơn hàng" sẽ chuyển trạng thái hóa đơn sang "Đã hủy"
+exports.huyHoaDon = async (req, res) => {
   try {
-    const AllDonHangGanDay = await HoaDonBan.findAll({
-      attributes: [
-        [Sequelize.fn("DATE", Sequelize.col("HoaDonBan.ngayBan")), "ngayBan"],
-        [Sequelize.col("NguoiDung.tenND"), "tenND"],
-        [Sequelize.col("HoaDonBan.trangThai"), "trangThai"],
-        [Sequelize.fn("SUM", Sequelize.col("CTHoaDonBans.soLuong")), "soLuong"],
-      ],
+    const { maHDB } = req.body;
+
+    const hoaDonBan = await HoaDonBan.findByPk(maHDB);
+    if (!hoaDonBan) {
+      return res.status(404).json({ error: "Hóa đơn bán không tồn tại" });
+    }
+
+    // Chỉ cho phép hủy nếu trạng thái là "Chờ duyệt"
+    if (hoaDonBan.trangThai !== "Chờ duyệt") {
+      return res.status(400).json({
+        error: "Chỉ có thể hủy hóa đơn có trạng thái 'Chờ duyệt'",
+      });
+    }
+
+    // Cập nhật trạng thái hóa đơn
+    await hoaDonBan.update({ trangThai: "Đã hủy" });
+
+    // Trả về hóa đơn đã cập nhật
+    const updatedHoaDonBan = await HoaDonBan.findByPk(maHDB, {
+      include: [{ model: CTHoaDonBan, as: "CTHoaDonBans" }],
+    });
+
+    res.status(200).json(updatedHoaDonBan);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// phân loại trạng thái hóa đơn bán gồm thông tin: Khách hàng, Ngày bán, Phương thức, Tổng tiền, Trạng thái, chi tiết hóa đơn(tên sản phẩm, ảnh sản phẩm, số lượng, đơn giá, thành tiền)
+exports.getPhanLoaiTrangThai = async (req, res) => {
+  try {
+    const hoaDonBans = await HoaDonBan.findAll({
       include: [
         {
           model: NguoiDung,
@@ -455,23 +492,50 @@ exports.thongKeDonHangGanDay = async (req, res) => {
         {
           model: CTHoaDonBan,
           as: "CTHoaDonBans",
-          attributes: [],
+          include: [
+            {
+              model: SanPham,
+              as: "SanPham",
+              attributes: ["tenSP", "anhSP"],
+            },
+          ],
         },
       ],
-      group: [
-        Sequelize.fn("DATE", Sequelize.col("HoaDonBan.ngayBan")),
-        Sequelize.col("NguoiDung.tenND"),
-        Sequelize.col("HoaDonBan.trangThai"),
-      ],
       order: [["ngayBan", "DESC"]],
-      limit: 5,
-      raw: true,
     });
 
-    res.status(200).json({ AllDonHangGanDay });
+    //
+    const format = (arr) =>
+      arr.map((hd) => ({
+        khachHang: hd.NguoiDung ? hd.NguoiDung.tenND : "",
+        ngayBan: hd.ngayBan,
+        phuongThuc: hd.phuongThuc,
+        tongTien: hd.tongTien,
+        trangThai: hd.trangThai,
+        chiTiet: (hd.CTHoaDonBans || []).map((ct) => ({
+          tenSP: ct.SanPham ? ct.SanPham.tenSP : "",
+          anhSP: ct.SanPham ? ct.SanPham.anhSP : "",
+          soLuong: ct.soLuong,
+          donGia: ct.donGia,
+          thanhTien: ct.thanhTien,
+        })),
+      }));
+
+    // Phân loại theo trạng thái
+    const daDuyet = format(
+      hoaDonBans.filter((hd) => hd.trangThai === "Đã duyệt")
+    );
+    const choDuyet = format(
+      hoaDonBans.filter((hd) => hd.trangThai === "Chờ duyệt")
+    );
+    const daHuy = format(hoaDonBans.filter((hd) => hd.trangThai === "Đã hủy"));
+
+    res.status(200).json({
+      daDuyet,
+      choDuyet,
+      daHuy,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
-//

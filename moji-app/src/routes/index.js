@@ -25,7 +25,7 @@ import DonHang from "./../pages/HoSo/donHang";
 import HeThongCuaHang from "../pages/HeThongCuaHang";
 import QuenMatKhau from "../pages/QuenMatKhau";
 import PaymentResultPage from "../pages/payment-result";
-import Test from "../pages/test";
+import HoanThanh from "../pages/HoSo/hoanThanh";
 
 export const routes = [
   // user
@@ -67,10 +67,7 @@ export const routes = [
         path: "payment-result",
         element: <PaymentResultPage />,
       },
-      {
-        path: "test",
-        element: <Test />,
-      },
+
       {
         path: "ho-so",
         element: <HoSo />,
@@ -82,6 +79,7 @@ export const routes = [
           { path: "ls-don-hang", element: <DonHang /> },
         ],
       },
+      { path: "hoan-thanh", element: <HoanThanh /> },
       {
         path: "he-thong-cua-hang",
         element: <HeThongCuaHang />,

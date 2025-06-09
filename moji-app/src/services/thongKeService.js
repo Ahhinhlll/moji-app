@@ -25,7 +25,7 @@ export const getAllThongKeTop5DanhMucBanChay = async () => {
   return response.data;
 };
 
-export const getAllTop5SanPhamBanChay = async () => {
-  const res = await request.get("thongke/topsanphambanchay");
-  return res.data;
+export const getPhanLoaiTrangThai = async () => {
+  const response = await request.get("hoadonban/phanloaitrangthai");
+  return response.data;
 };

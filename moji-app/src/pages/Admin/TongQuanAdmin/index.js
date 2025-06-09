@@ -4,6 +4,7 @@ import "./tongQuan.scss";
 import ThongKeItem from "./thongKeItem";
 import ThongKeBang from "./thongKeBang";
 import ThongKeChart from "./thongKeChart";
+import ThongTinNgoai from "./thongTinNgoai";
 
 function TongQuanAdmin() {
   if (!localStorage.getItem("token")) {
@@ -15,6 +16,7 @@ function TongQuanAdmin() {
         <ThongKeItem />
         <ThongKeChart />
         <ThongKeBang />
+        <ThongTinNgoai />
       </div>
     </div>
   );
